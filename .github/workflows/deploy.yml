@@ -1,0 +1,68 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install Dependencies
+        run: |
+          npm install
+          cd web && npm install
+
+      - name: Build Server
+        run: |
+          cd server
+          npm run build
+
+      - name: Build Web
+        run: |
+          cd web
+          npm run build
+
+      - name: Deploy Web Files
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          source: "web/dist/*"
+          target: "/root/outray/web"
+          strip_components: 2
+
+      - name: Deploy Server Files
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          source: "server/dist,server/package.json"
+          target: "/root/outray/server"
+          strip_components: 1
+
+      - name: Restart Server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script: |
+            cd /root/outray/server
+            npm install --production
+            # Stop existing node process if it's not managed by PM2 yet
+            pkill -f "node /root/outray/server/dist/server/src/server.js" || true
+            pm2 restart outray-server || pm2 start dist/server/src/server.js --name outray-server
+            pm2 save
