@@ -1,6 +1,7 @@
 export interface OpenTunnelMessage {
   type: "open_tunnel";
   subdomain?: string | null;
+  apiKey?: string;
 }
 
 export interface TunnelOpenedMessage {
