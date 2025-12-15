@@ -11,6 +11,7 @@ export class OutRayClient {
   private apiKey?: string;
   private subdomain?: string;
   private reconnectTimeout: NodeJS.Timeout | null = null;
+  private pingInterval: NodeJS.Timeout | null = null;
   private shouldReconnect = true;
   private assignedUrl: string | null = null;
 
@@ -38,6 +39,8 @@ export class OutRayClient {
       this.reconnectTimeout = null;
     }
 
+    this.stopPing();
+
     if (this.ws) {
       this.ws.close();
       this.ws = null;
@@ -55,10 +58,14 @@ export class OutRayClient {
     this.ws.on("error", (error) => {
       console.log(chalk.red(`❌ WebSocket error: ${error.message}`));
     });
+    this.ws.on("pong", () => {
+      // Received pong, connection is alive
+    });
   }
 
   private handleOpen(): void {
     console.log(chalk.green(`🔌 Linked to your local port ${this.localPort}`));
+    this.startPing();
 
     const handshake = encodeMessage({
       type: "open_tunnel",
@@ -166,7 +173,24 @@ export class OutRayClient {
     }
   }
 
+  private startPing(): void {
+    this.stopPing();
+    this.pingInterval = setInterval(() => {
+      if (this.ws?.readyState === WebSocket.OPEN) {
+        this.ws.ping();
+      }
+    }, 30000); // Ping every 30 seconds
+  }
+
+  private stopPing(): void {
+    if (this.pingInterval) {
+      clearInterval(this.pingInterval);
+      this.pingInterval = null;
+    }
+  }
+
   private handleClose(): void {
+    this.stopPing();
     if (!this.shouldReconnect) return;
 
     console.log(chalk.yellow("😵 Disconnected from OutRay. Retrying in 2s…"));
