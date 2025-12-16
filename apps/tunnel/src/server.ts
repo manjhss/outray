@@ -1,8 +1,11 @@
 import { createServer } from "http";
 import Redis from "ioredis";
+import { WebSocketServer } from "ws";
+import { parse } from "url";
 import { TunnelRouter } from "./core/TunnelRouter";
 import { WSHandler } from "./core/WSHandler";
 import { HTTPProxy } from "./core/HTTPProxy";
+import { LogManager } from "./core/LogManager";
 import { config } from "./config";
 import { checkClickHouseConnection } from "./lib/clickhouse";
 
@@ -31,11 +34,41 @@ const router = new TunnelRouter({
   requestTimeoutMs: config.requestTimeoutMs,
 });
 const httpServer = createServer();
-const proxy = new HTTPProxy(router, config.baseDomain);
+const logManager = new LogManager();
+const proxy = new HTTPProxy(router, config.baseDomain, logManager);
 
 console.log("🚨 BASE DOMAIN LOADED:", config.baseDomain);
 
-new WSHandler(httpServer, router);
+const wssTunnel = new WebSocketServer({ noServer: true });
+const wssDashboard = new WebSocketServer({ noServer: true });
+
+new WSHandler(wssTunnel, router);
+
+wssDashboard.on("connection", (ws, req) => {
+  const { query } = parse(req.url || "", true);
+  const orgId = query.orgId as string;
+
+  if (!orgId) {
+    ws.close(1008, "Organization ID required");
+    return;
+  }
+
+  logManager.subscribe(orgId, ws);
+});
+
+httpServer.on("upgrade", (request, socket, head) => {
+  const { pathname } = parse(request.url || "");
+
+  if (pathname === "/dashboard/events") {
+    wssDashboard.handleUpgrade(request, socket, head, (ws) => {
+      wssDashboard.emit("connection", ws, request);
+    });
+  } else {
+    wssTunnel.handleUpgrade(request, socket, head, (ws) => {
+      wssTunnel.emit("connection", ws, request);
+    });
+  }
+});
 
 httpServer.on("request", (req, res) => {
   const host = req.headers.host || "";
