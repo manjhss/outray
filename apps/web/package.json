@@ -12,6 +12,7 @@
     "db:migrate": "npx drizzle-kit generate && npx drizzle-kit migrate"
   },
   "dependencies": {
+    "@clickhouse/client": "^1.15.0",
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.4.2",
     "@tailwindcss/vite": "^4.1.18",
