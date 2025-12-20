@@ -54,21 +54,13 @@ export const Route = createFileRoute("/api/stats/tunnel")({
         }
 
         let interval = "24 HOUR";
-        let groupBy = "toStartOfHour";
-        let format = "%H:%M";
 
         if (timeRange === "1h") {
           interval = "1 HOUR";
-          groupBy = "toStartOfMinute";
-          format = "%H:%M";
         } else if (timeRange === "7d") {
           interval = "7 DAY";
-          groupBy = "toStartOfDay";
-          format = "%Y-%m-%d";
         } else if (timeRange === "30d") {
           interval = "30 DAY";
-          groupBy = "toStartOfDay";
-          format = "%Y-%m-%d";
         }
 
         try {
@@ -135,25 +127,67 @@ export const Route = createFileRoute("/api/stats/tunnel")({
           const errorRate =
             totalCount > 0 ? (errorCount / totalCount) * 100 : 0;
 
-          const chartResult = await clickhouse.query({
-            query: `
+          let chartQuery = "";
+          if (timeRange === "1h") {
+            chartQuery = `
+              WITH times AS (
+                SELECT toStartOfMinute(now64() - INTERVAL number MINUTE) as time
+                FROM numbers(60)
+              )
               SELECT 
-                ${groupBy}(timestamp) as time,
-                count() as requests,
-                avg(request_duration_ms) as duration
-              FROM tunnel_events
-              WHERE tunnel_id = {tunnelId:String}
-                AND timestamp >= now64() - INTERVAL ${interval}
-              GROUP BY time
-              ORDER BY time ASC
-            `,
+                t.time as time,
+                countIf(e.tunnel_id = {tunnelId:String}) as requests,
+                avg(e.request_duration_ms) as duration
+              FROM times t
+              LEFT JOIN tunnel_events e ON toStartOfMinute(e.timestamp) = t.time
+                AND e.tunnel_id = {tunnelId:String}
+              GROUP BY t.time
+              ORDER BY t.time ASC
+            `;
+          } else if (timeRange === "24h") {
+            chartQuery = `
+              WITH times AS (
+                SELECT toStartOfHour(now64() - INTERVAL number HOUR) as time
+                FROM numbers(24)
+              )
+              SELECT 
+                t.time as time,
+                countIf(e.tunnel_id = {tunnelId:String}) as requests,
+                avg(e.request_duration_ms) as duration
+              FROM times t
+              LEFT JOIN tunnel_events e ON toStartOfHour(e.timestamp) = t.time
+                AND e.tunnel_id = {tunnelId:String}
+              GROUP BY t.time
+              ORDER BY t.time ASC
+            `;
+          } else {
+            const days = timeRange === "7d" ? 7 : 30;
+            chartQuery = `
+              WITH times AS (
+                SELECT toStartOfDay(now64() - INTERVAL number DAY) as time
+                FROM numbers(${days})
+              )
+              SELECT 
+                t.time as time,
+                countIf(e.tunnel_id = {tunnelId:String}) as requests,
+                avg(e.request_duration_ms) as duration
+              FROM times t
+              LEFT JOIN tunnel_events e ON toStartOfDay(e.timestamp) = t.time
+                AND e.tunnel_id = {tunnelId:String}
+              GROUP BY t.time
+              ORDER BY t.time ASC
+            `;
+          }
+
+          const chartResult = await clickhouse.query({
+            query: chartQuery,
             query_params: { tunnelId },
             format: "JSONEachRow",
           });
           const chartData = (await chartResult.json()) as Array<{
             time: string;
             requests: string;
-            duration: string;
+            duration: string | null;
           }>;
 
           const requestsResult = await clickhouse.query({
@@ -185,7 +219,7 @@ export const Route = createFileRoute("/api/stats/tunnel")({
             chartData: chartData.map((d) => ({
               time: d.time,
               requests: parseInt(d.requests),
-              duration: parseFloat(d.duration),
+              duration: d.duration ? parseFloat(d.duration) : 0,
             })),
             requests: requests.map((r) => ({
               id: r.timestamp,
