@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { authClient } from "../../lib/auth-client";
 import { useEffect, useState } from "react";
 import { Copy, Check, Download, Key, Play } from "lucide-react";
+import { useAppStore } from "../../lib/store";
 
 export const Route = createFileRoute("/dash/install")({
   component: Install,
@@ -10,14 +10,14 @@ export const Route = createFileRoute("/dash/install")({
 function Install() {
   const [token, setToken] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const { selectedOrganizationId } = useAppStore();
 
   useEffect(() => {
     const fetchToken = async () => {
-      const session = await authClient.getSession();
-      const orgId = session.data?.session.activeOrganizationId;
-
-      if (orgId) {
-        const res = await fetch(`/api/auth-tokens?organizationId=${orgId}`);
+      if (selectedOrganizationId) {
+        const res = await fetch(
+          `/api/auth-tokens?organizationId=${selectedOrganizationId}`,
+        );
         const tokens = await res.json();
         if (tokens.length > 0) {
           setToken(tokens[0].token);
@@ -25,7 +25,7 @@ function Install() {
       }
     };
     fetchToken();
-  }, []);
+  }, [selectedOrganizationId]);
 
   return (
     <div className="mx-auto max-w-5xl p-8">
