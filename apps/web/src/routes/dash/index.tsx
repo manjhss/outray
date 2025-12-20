@@ -11,7 +11,7 @@ import {
   Clock,
   ChevronRight,
 } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { appClient } from "../../lib/app-client";
 import { useAppStore } from "../../lib/store";
 import {
@@ -65,6 +65,7 @@ function OverviewView() {
       return result;
     },
     enabled: !!activeOrganization,
+    placeholderData: keepPreviousData,
   });
 
   const { data: tunnelsData } = useQuery({
@@ -196,13 +197,31 @@ function OverviewView() {
             <div className="h-75 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart
-                  data={stats.chartData.map((d) => ({
-                    time: new Date(d.hour).toLocaleTimeString("en-US", {
-                      hour: "2-digit",
-                      hour12: false,
-                    }),
-                    requests: d.requests,
-                  }))}
+                  data={stats.chartData.map((d) => {
+                    const date = new Date(d.hour);
+                    let timeLabel = "";
+                    if (timeRange === "1h") {
+                      timeLabel = date.toLocaleTimeString("en-US", {
+                        hour: "numeric",
+                        minute: "2-digit",
+                        hour12: true,
+                      });
+                    } else if (timeRange === "24h") {
+                      timeLabel = date.toLocaleTimeString("en-US", {
+                        hour: "numeric",
+                        hour12: true,
+                      });
+                    } else {
+                      timeLabel = date.toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                      });
+                    }
+                    return {
+                      time: timeLabel,
+                      requests: d.requests,
+                    };
+                  })}
                   margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
                 >
                   <defs>
