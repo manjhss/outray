@@ -11,33 +11,22 @@ export const Route = createFileRoute("/api/tunnel/register")({
       POST: async ({ request }) => {
         try {
           const body = (await request.json()) as {
-            subdomain?: string;
             userId?: string;
             organizationId?: string;
             url?: string;
           };
 
-          const { subdomain, userId, organizationId, url } = body;
+          const { userId, organizationId, url } = body;
 
-          if (!subdomain || !userId || !organizationId) {
+          if (!url || !userId || !organizationId) {
             return json({ error: "Missing required fields" }, { status: 400 });
           }
 
-          // Use the provided URL or construct one
-          const baseDomain = process.env.BASE_DOMAIN || "localhost.direct";
-          const protocol = baseDomain === "localhost.direct" ? "http" : "https";
-          const portSuffix =
-            baseDomain === "localhost.direct"
-              ? `:${process.env.PORT || "3547"}`
-              : "";
-          const tunnelUrl =
-            url || `${protocol}://${subdomain}.${baseDomain}${portSuffix}`;
-
-          // Check if tunnel with this subdomain URL already exists
+          // Check if tunnel with this URL already exists
           const [existingTunnel] = await db
             .select()
             .from(tunnels)
-            .where(eq(tunnels.url, tunnelUrl));
+            .where(eq(tunnels.url, url));
 
           if (existingTunnel) {
             // Tunnel with this URL already exists, update lastSeenAt
@@ -55,7 +44,7 @@ export const Route = createFileRoute("/api/tunnel/register")({
           // Create new tunnel record with full URL
           const tunnelRecord = {
             id: randomUUID(),
-            url: tunnelUrl,
+            url,
             userId,
             organizationId,
             name: null,
