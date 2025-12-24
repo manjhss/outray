@@ -43,45 +43,9 @@ export const subscriptions = pgTable(
   ],
 );
 
-export const subscriptionUsage = pgTable(
-  "subscription_usage",
-  {
-    id: text("id").primaryKey(),
-    organizationId: text("organization_id")
-      .notNull()
-      .references(() => organizations.id, { onDelete: "cascade" }),
-    month: text("month").notNull(), // Format: YYYY-MM
-    tunnelsUsed: integer("tunnels_used").default(0).notNull(),
-    domainsUsed: integer("domains_used").default(0).notNull(),
-    subdomainsUsed: integer("subdomains_used").default(0).notNull(),
-    membersCount: integer("members_count").default(0).notNull(),
-    requestsCount: integer("requests_count").default(0).notNull(),
-    bandwidthBytes: integer("bandwidth_bytes").default(0).notNull(),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at")
-      .defaultNow()
-      .$onUpdate(() => new Date())
-      .notNull(),
-  },
-  (table) => [
-    index("subscription_usage_organizationId_idx").on(table.organizationId),
-    index("subscription_usage_month_idx").on(table.month),
-  ],
-);
-
 export const subscriptionsRelations = relations(subscriptions, ({ one }) => ({
   organization: one(organizations, {
     fields: [subscriptions.organizationId],
     references: [organizations.id],
   }),
 }));
-
-export const subscriptionUsageRelations = relations(
-  subscriptionUsage,
-  ({ one }) => ({
-    organization: one(organizations, {
-      fields: [subscriptionUsage.organizationId],
-      references: [organizations.id],
-    }),
-  }),
-);
