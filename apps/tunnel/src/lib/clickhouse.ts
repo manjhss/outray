@@ -12,6 +12,7 @@ export interface TunnelEvent {
   timestamp: number;
   tunnel_id: string;
   organization_id: string;
+  retention_days: number;
   host: string;
   method: string;
   path: string;
