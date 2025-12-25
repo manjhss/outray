@@ -192,5 +192,14 @@ export const appClient = {
       }>("get", "/api/stats/tunnel", {
         params: { tunnelId, range },
       }),
+
+    bandwidth: async (organizationId: string) =>
+      apiCall<{
+        usage: number;
+        limit: number;
+        percentage: number;
+      }>("get", "/api/stats/bandwidth", {
+        params: { organizationId },
+      }),
   },
 };
