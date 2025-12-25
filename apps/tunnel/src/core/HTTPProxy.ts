@@ -2,7 +2,7 @@ import { IncomingMessage, ServerResponse } from "http";
 import fs from "fs";
 import path from "path";
 import { TunnelRouter } from "./TunnelRouter";
-import { extractSubdomain } from "../../../../shared/utils";
+import { getBandwidthKey } from "../../../../shared/utils";
 import { logger } from "../lib/clickhouse";
 import { LogManager } from "./LogManager";
 
@@ -55,7 +55,7 @@ export class HTTPProxy {
       const redis = this.router.getRedis();
       const bandwidthKey =
         metadata?.organizationId && redis
-          ? this.getBandwidthKey(metadata.organizationId)
+          ? getBandwidthKey(metadata.organizationId)
           : null;
       const bandwidthLimit = metadata?.bandwidthLimit;
       const shouldEnforce =
@@ -204,12 +204,5 @@ export class HTTPProxy {
       console.error("Failed to load offline page template", error);
       return `<h1>${tunnelId} is offline</h1>`;
     }
-  }
-
-  private getBandwidthKey(organizationId: string): string {
-    const date = new Date();
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    return `bw:${organizationId}:${year}-${month}`;
   }
 }
