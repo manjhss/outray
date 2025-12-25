@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import {
   useQuery,
@@ -24,7 +24,6 @@ import {
   Lock,
   UserCheck,
   Key,
-  Trash2,
   AlertTriangle,
 } from "lucide-react";
 import {
@@ -54,7 +53,6 @@ function formatBytes(bytes: number): string {
 
 function TunnelDetailView() {
   const { tunnelId } = Route.useParams();
-  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<
     "overview" | "requests" | "security" | "settings"
@@ -759,38 +757,6 @@ function TunnelDetailView() {
                   <option>🇪🇺 EU Central (Frankfurt)</option>
                   <option>🌏 Asia Pacific (Singapore)</option>
                 </select>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-red-500/5 border border-red-500/10 rounded-2xl p-6">
-            <div className="flex items-start gap-4">
-              <div className="p-3 bg-red-500/10 text-red-500 rounded-xl">
-                <AlertTriangle size={24} />
-              </div>
-              <div className="flex-1">
-                <h3 className="text-lg font-medium text-white mb-1">
-                  Danger Zone
-                </h3>
-                <p className="text-sm text-gray-400 mb-6">
-                  Once you delete a tunnel, there is no going back. Please be
-                  certain.
-                </p>
-
-                <div className="flex items-center justify-between p-4 bg-red-500/5 border border-red-500/10 rounded-xl">
-                  <div>
-                    <div className="text-sm font-medium text-white">
-                      Delete Tunnel
-                    </div>
-                    <div className="text-xs text-gray-500">
-                      Permanently remove this tunnel and all its data
-                    </div>
-                  </div>
-                  <button className="flex items-center gap-2 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-xl transition-colors text-sm font-medium">
-                    <Trash2 size={16} />
-                    Delete Tunnel
-                  </button>
-                </div>
               </div>
             </div>
           </div>
