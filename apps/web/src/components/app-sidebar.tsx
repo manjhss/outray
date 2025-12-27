@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useParams } from "@tanstack/react-router";
 import {
   LayoutDashboard,
   Network,
@@ -28,10 +29,22 @@ interface SidebarProps {
 }
 
 export function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
-  const { selectedOrganization, setSelectedOrganization } = useAppStore();
-  const [organizations, setOrganizations] = useState<any[]>([]);
+  const { setSelectedOrganization } = useAppStore();
+  const { data: organizations = [] } = authClient.useListOrganizations();
   const [isOrgDropdownOpen, setIsOrgDropdownOpen] = useState(false);
   const [activeTunnelsCount, setActiveTunnelsCount] = useState<number>(0);
+  const { orgSlug } = useParams({ from: "/$orgSlug" });
+
+  const selectedOrg =
+    organizations?.find((org) => org.slug === orgSlug) || organizations?.[0];
+
+  const selectedOrganization = selectedOrg
+    ? {
+        id: selectedOrg.id,
+        name: selectedOrg.name,
+        slug: selectedOrg.slug,
+      }
+    : null;
 
   const selectedOrganizationId = selectedOrganization?.id;
 
@@ -56,26 +69,6 @@ export function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
   const tunnelLimit = planLimits.maxTunnels;
 
   useEffect(() => {
-    const fetchOrgs = async () => {
-      const { data } = await authClient.organization.list();
-      if (data) {
-        setOrganizations(data);
-        if (!selectedOrganization && data.length > 0) {
-          const session = await authClient.getSession();
-          const activeOrgId = session.data?.session.activeOrganizationId;
-          const orgToSelect = data.find((o) => o.id === activeOrgId) || data[0];
-          setSelectedOrganization({
-            id: orgToSelect.id,
-            name: orgToSelect.name,
-            slug: orgToSelect.slug,
-          });
-        }
-      }
-    };
-    fetchOrgs();
-  }, []);
-
-  useEffect(() => {
     const fetchStats = async () => {
       if (selectedOrganizationId) {
         const response = await appClient.stats.overview(selectedOrganizationId);
@@ -86,10 +79,6 @@ export function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
     };
     fetchStats();
   }, [selectedOrganizationId]);
-
-  const selectedOrg =
-    organizations.find((org) => org.id === selectedOrganizationId) ||
-    organizations[0];
 
   const NAV_ICON_SIZE = 14;
 
@@ -182,7 +171,7 @@ export function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
       </div>
 
       <OrganizationDropdown
-        organizations={organizations}
+        organizations={organizations!}
         selectedOrganization={selectedOrganization}
         setSelectedOrganization={setSelectedOrganization}
         isOrgDropdownOpen={isOrgDropdownOpen}

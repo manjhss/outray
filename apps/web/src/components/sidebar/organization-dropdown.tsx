@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useLocation } from "@tanstack/react-router";
 import { useRef, useEffect } from "react";
 import { ChevronRight, Check, Plus } from "lucide-react";
 
@@ -28,6 +28,7 @@ export function OrganizationDropdown({
   selectedOrg,
 }: OrganizationDropdownProps) {
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const location = useLocation();
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -74,8 +75,9 @@ export function OrganizationDropdown({
         <div className="absolute top-full left-4 right-4 mt-2 bg-[#101010] border border-white/10 rounded-xl shadow-xl shadow-black/50 overflow-hidden z-50 backdrop-blur-xl">
           <div className="p-1 max-h-60 overflow-y-auto">
             {organizations.map((org) => (
-              <button
+              <Link
                 key={org.id}
+                to={location.pathname.replace(/^\/[^/]+/, `/${org.slug}`)}
                 onClick={() => {
                   setSelectedOrganization({
                     id: org.id,
@@ -92,7 +94,7 @@ export function OrganizationDropdown({
               >
                 <span className="truncate">{org.name}</span>
                 {selectedOrganization?.id === org.id && <Check size={14} />}
-              </button>
+              </Link>
             ))}
           </div>
           <div className="p-1 border-t border-white/5">
