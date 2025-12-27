@@ -4,7 +4,7 @@ export const SUBSCRIPTION_PLANS = {
     name: "Free",
     price: 0,
     features: {
-      maxTunnels: 1,
+      maxTunnels: 2,
       maxDomains: 0,
       maxSubdomains: 1,
       maxMembers: 1,
