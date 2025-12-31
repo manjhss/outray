@@ -469,7 +469,7 @@ async function main() {
       }
     }
 
-    const defaultConfigPath = path.join(process.cwd(), "config.toml");
+    const defaultConfigPath = path.join(process.cwd(), "outray", "config.toml");
     const tomlConfigPath = configPath || defaultConfigPath;
 
     try {
