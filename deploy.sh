@@ -21,6 +21,11 @@ GREEN_NAME="outray-green"
 echo "🐯 Running Tiger Data migrations..."
 cd /root/outray
 if [ -n "$TIGER_DATA_URL" ]; then
+  # Install psql if not available
+  if ! command -v psql &> /dev/null; then
+    echo "📦 Installing PostgreSQL client..."
+    apt-get update -qq && apt-get install -y -qq postgresql-client > /dev/null
+  fi
   psql "$TIGER_DATA_URL" -f deploy/setup_tigerdata.sql
   echo "✅ Tiger Data migrations complete."
 else
