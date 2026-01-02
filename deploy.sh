@@ -21,7 +21,15 @@ GREEN_NAME="outray-green"
 echo "🐯 Running Tiger Data migrations..."
 cd /root/outray
 if [ -n "$TIGER_DATA_URL" ]; then
-  psql "$TIGER_DATA_URL" -f deploy/setup_tigerdata.sql
+  # Extract password from URL and set PGPASSWORD
+  export PGPASSWORD=$(echo "$TIGER_DATA_URL" | sed -E 's|.*://[^:]+:([^@]+)@.*|\1|')
+  # Extract host, port, dbname, user for psql
+  DB_HOST=$(echo "$TIGER_DATA_URL" | sed -E 's|.*@([^:/]+).*|\1|')
+  DB_PORT=$(echo "$TIGER_DATA_URL" | sed -E 's|.*:([0-9]+)/.*|\1|')
+  DB_NAME=$(echo "$TIGER_DATA_URL" | sed -E 's|.*/([^?]+).*|\1|')
+  DB_USER=$(echo "$TIGER_DATA_URL" | sed -E 's|.*://([^:]+):.*|\1|')
+  psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -f deploy/setup_tigerdata.sql
+  unset PGPASSWORD
   echo "✅ Tiger Data migrations complete."
 else
   echo "⚠️ TIGER_DATA_URL not set, skipping migrations."
