@@ -1,6 +1,8 @@
 import { useNavigate } from "@tanstack/react-router";
-import { HelpCircle, LogOut } from "lucide-react";
+import { Bug, LogOut } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
+import { useState } from "react";
+import { ReportBugModal } from "../report-bug-modal";
 
 interface UserSectionProps {
   user: any;
@@ -9,6 +11,7 @@ interface UserSectionProps {
 
 export function UserSection({ user, isCollapsed }: UserSectionProps) {
   const navigate = useNavigate();
+  const [isReportBugModalOpen, setIsReportBugModalOpen] = useState(false);
 
   const handleLogout = async () => {
     await authClient.signOut();
@@ -18,11 +21,19 @@ export function UserSection({ user, isCollapsed }: UserSectionProps) {
   return (
     <div className="p-3 border-t border-white/5 space-y-2 bg-black/20">
       <button
+        onClick={() => setIsReportBugModalOpen(true)}
         className={`flex items-center ${isCollapsed ? "justify-center" : "gap-3"} w-full px-3 py-2.5 text-sm text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition-colors group`}
       >
-        <HelpCircle size={20} />
-        {!isCollapsed && <span>Help & Support</span>}
+        <Bug size={20} />
+        {!isCollapsed && <span>Report a Bug</span>}
       </button>
+
+      <ReportBugModal
+        isOpen={isReportBugModalOpen}
+        onClose={() => setIsReportBugModalOpen(false)}
+        userEmail={user?.email}
+        userName={user?.name}
+      />
 
       <div
         className={`flex items-center ${isCollapsed ? "justify-center" : "gap-3"} px-2 py-2 mt-2 rounded-xl hover:bg-white/5 transition-colors cursor-pointer group border border-transparent hover:border-white/5`}
