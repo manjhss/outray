@@ -67,6 +67,7 @@ export const auth = betterAuth({
           const isNewUser = now - createdAt < 30000; // 30 seconds
 
           if (isNewUser) {
+            // Send welcome email
             try {
               const { html, subject } = generateEmail("welcome", {
                 name: newSession.user.name || "User",
@@ -83,6 +84,28 @@ export const auth = betterAuth({
               console.log("[Welcome Email] Sent to:", newSession.user.email);
             } catch (error) {
               console.error("[Welcome Email] Failed to send:", error);
+            }
+
+            // Subscribe to Plunk
+            try {
+              await fetch("https://next-api.useplunk.com/contacts", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${process.env.PLUNK_API_KEY}`,
+                },
+                body: JSON.stringify({
+                  email: newSession.user.email,
+                  subscribed: true,
+                  data: {
+                    signup: true,
+                    name: newSession.user.name || "",
+                  },
+                }),
+              });
+              console.log("[Plunk] Subscribed:", newSession.user.email);
+            } catch (error) {
+              console.error("[Plunk] Failed to subscribe:", error);
             }
           }
         }
