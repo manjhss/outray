@@ -67,187 +67,40 @@ export function DomainCard({
   const txtValue = domain.id;
 
   return (
-    <div className="group flex items-center justify-between bg-white/2 border border-white/5 rounded-2xl p-6 hover:border-white/10 transition-all">
-      <div className="flex items-center gap-4 w-full">
-        <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center shrink-0">
+    <div className="group bg-white/2 border border-white/5 rounded-2xl p-4 sm:p-6 hover:border-white/10 transition-all">
+      {/* Header row with icon, domain info, and delete button */}
+      <div className="flex items-start gap-3 sm:gap-4">
+        <div className="hidden sm:flex w-10 h-10 rounded-full bg-white/5 items-center justify-center shrink-0">
           <Globe className="w-5 h-5 text-white/40" />
         </div>
-        <div className="w-full">
-          <div className="flex items-center gap-3">
-            <h3 className="text-lg font-medium text-white">{domain.domain}</h3>
+        <div className="flex-1 min-w-0">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+            <h3 className="text-base sm:text-lg font-medium text-white break-all">
+              {domain.domain}
+            </h3>
             {domain.status === "active" ? (
-              <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-green-500/10 border border-green-500/20 text-xs font-medium text-green-400">
+              <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-green-500/10 border border-green-500/20 text-xs font-medium text-green-400 shrink-0">
                 <CheckCircle className="w-3 h-3" />
                 Active
               </span>
             ) : domain.status === "failed" ? (
-              <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-red-500/10 border border-red-500/20 text-xs font-medium text-red-400">
+              <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-red-500/10 border border-red-500/20 text-xs font-medium text-red-400 shrink-0">
                 <AlertCircle className="w-3 h-3" />
                 Failed
               </span>
             ) : (
-              <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-yellow-500/10 border border-yellow-500/20 text-xs font-medium text-yellow-400">
+              <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-yellow-500/10 border border-yellow-500/20 text-xs font-medium text-yellow-400 shrink-0">
                 <AlertCircle className="w-3 h-3" />
                 Pending DNS
               </span>
             )}
           </div>
-          <p className="text-sm text-white/40 mt-1">
+          <p className="text-xs sm:text-sm text-white/40 mt-1">
             Added on {new Date(domain.createdAt).toLocaleDateString()}
           </p>
-          {domain.status !== "active" && (
-            <div className="mt-4 bg-black/20 rounded-2xl border border-white/5 overflow-hidden">
-              <div className="p-4 border-b border-white/5 flex items-start gap-3">
-                <div className="p-2 bg-blue-500/10 rounded-xl shrink-0">
-                  <Info className="w-4 h-4 text-blue-400" />
-                </div>
-                <div>
-                  <h4 className="text-sm font-medium text-white mb-1">
-                    DNS Configuration
-                  </h4>
-                  <p className="text-xs text-white/60 leading-relaxed">
-                    Add these records to your domain provider to verify
-                    ownership and route traffic. It may take a few minutes for
-                    changes to propagate.
-                  </p>
-                </div>
-              </div>
-
-              <div className="p-4 space-y-3">
-                {/* CNAME Record */}
-                <div className="bg-white/5 rounded-xl border border-white/5 overflow-hidden">
-                  <div className="grid grid-cols-[60px_1fr_1fr] gap-4 p-2.5 border-b border-white/5 text-[10px] font-medium text-white/40 uppercase tracking-wider">
-                    <div>Type</div>
-                    <div>Name</div>
-                    <div>Value</div>
-                  </div>
-                  <div className="grid grid-cols-[60px_1fr_1fr] gap-4 p-3 items-center">
-                    <div>
-                      <span className="inline-flex items-center px-2 py-1 rounded-full bg-blue-500/10 text-blue-400 text-xs font-medium ring-1 ring-inset ring-blue-500/20">
-                        CNAME
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between gap-2 min-w-0">
-                      <div
-                        className="font-mono text-white/80 text-xs truncate"
-                        title={cnameName}
-                      >
-                        {cnameName}
-                      </div>
-                      <button
-                        onClick={() =>
-                          handleCopy(cnameName, `cname-name-${domain.id}`)
-                        }
-                        className="p-1.5 hover:bg-white/10 rounded-lg text-white/40 hover:text-white transition-colors shrink-0"
-                        title="Copy name"
-                      >
-                        {copiedField === `cname-name-${domain.id}` ? (
-                          <Check className="w-3.5 h-3.5 text-green-400" />
-                        ) : (
-                          <Copy className="w-3.5 h-3.5" />
-                        )}
-                      </button>
-                    </div>
-                    <div className="flex items-center justify-between gap-2 min-w-0">
-                      <div
-                        className="font-mono text-white/60 text-xs truncate"
-                        title={cnameValue}
-                      >
-                        {cnameValue}
-                      </div>
-                      <button
-                        onClick={() =>
-                          handleCopy(cnameValue, `cname-value-${domain.id}`)
-                        }
-                        className="p-1.5 hover:bg-white/10 rounded-lg text-white/40 hover:text-white transition-colors shrink-0"
-                        title="Copy value"
-                      >
-                        {copiedField === `cname-value-${domain.id}` ? (
-                          <Check className="w-3.5 h-3.5 text-green-400" />
-                        ) : (
-                          <Copy className="w-3.5 h-3.5" />
-                        )}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                {/* TXT Record */}
-                <div className="bg-white/5 rounded-xl border border-white/5 overflow-hidden">
-                  <div className="grid grid-cols-[60px_1fr_1fr] gap-4 p-2.5 border-b border-white/5 text-[10px] font-medium text-white/40 uppercase tracking-wider">
-                    <div>Type</div>
-                    <div>Name</div>
-                    <div>Value</div>
-                  </div>
-                  <div className="grid grid-cols-[60px_1fr_1fr] gap-4 p-3 items-center">
-                    <div>
-                      <span className="inline-flex items-center px-2 py-1 rounded-full bg-purple-500/10 text-purple-400 text-xs font-medium ring-1 ring-inset ring-purple-500/20">
-                        TXT
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between gap-2 min-w-0">
-                      <div
-                        className="font-mono text-white/80 text-xs truncate"
-                        title={txtName}
-                      >
-                        {txtName}
-                      </div>
-                      <button
-                        onClick={() =>
-                          handleCopy(txtName, `txt-name-${domain.id}`)
-                        }
-                        className="p-1.5 hover:bg-white/10 rounded-lg text-white/40 hover:text-white transition-colors shrink-0"
-                        title="Copy name"
-                      >
-                        {copiedField === `txt-name-${domain.id}` ? (
-                          <Check className="w-3.5 h-3.5 text-green-400" />
-                        ) : (
-                          <Copy className="w-3.5 h-3.5" />
-                        )}
-                      </button>
-                    </div>
-                    <div className="flex items-center justify-between gap-2 min-w-0">
-                      <div
-                        className="font-mono text-white/60 text-xs truncate"
-                        title={txtValue}
-                      >
-                        {txtValue}
-                      </div>
-                      <button
-                        onClick={() =>
-                          handleCopy(txtValue, `txt-value-${domain.id}`)
-                        }
-                        className="p-1.5 hover:bg-white/10 rounded-lg text-white/40 hover:text-white transition-colors shrink-0"
-                        title="Copy value"
-                      >
-                        {copiedField === `txt-value-${domain.id}` ? (
-                          <Check className="w-3.5 h-3.5 text-green-400" />
-                        ) : (
-                          <Copy className="w-3.5 h-3.5" />
-                        )}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="px-4 pb-4">
-                <button
-                  onClick={() => onVerify(domain.id)}
-                  disabled={isVerifying}
-                  className="w-full py-2.5 bg-white text-black rounded-full hover:bg-white/90 transition-colors font-medium disabled:opacity-50 text-sm"
-                >
-                  {isVerifying
-                    ? "Verifying Configuration..."
-                    : "Verify DNS Records"}
-                </button>
-              </div>
-            </div>
-          )}
         </div>
-      </div>
 
-      <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity self-start">
+        {/* Delete button - always visible on mobile, hover on desktop */}
         <button
           onClick={() => {
             setConfirmState({
@@ -259,12 +112,154 @@ export function DomainCard({
               confirmText: "Delete",
             });
           }}
-          className="p-2 hover:bg-red-500/10 text-white/20 hover:text-red-400 rounded-lg transition-colors"
+          className="p-2 sm:opacity-0 sm:group-hover:opacity-100 hover:bg-red-500/10 text-white/40 sm:text-white/20 hover:text-red-400 rounded-lg transition-all shrink-0"
           title="Remove domain"
         >
-          <Trash2 className="w-5 h-5" />
+          <Trash2 className="w-4 h-4 sm:w-5 sm:h-5" />
         </button>
       </div>
+
+      {/* DNS Configuration section - full width below header */}
+      {domain.status !== "active" && (
+        <div className="mt-4 bg-black/20 rounded-xl border border-white/5 overflow-hidden">
+          <div className="p-3 sm:p-4 border-b border-white/5 flex items-start gap-3">
+            <div className="p-1.5 sm:p-2 bg-blue-500/10 rounded-lg shrink-0">
+              <Info className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-400" />
+            </div>
+            <div>
+              <h4 className="text-xs sm:text-sm font-medium text-white mb-1">
+                DNS Configuration
+              </h4>
+              <p className="text-[11px] sm:text-xs text-white/60 leading-relaxed">
+                Add these records to your domain provider to verify ownership
+                and route traffic.
+              </p>
+            </div>
+          </div>
+
+          <div className="p-3 sm:p-4 space-y-3">
+            {/* CNAME Record */}
+            <div className="bg-white/5 rounded-lg border border-white/5 overflow-hidden">
+              <div className="p-3 space-y-3">
+                <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-blue-500/10 text-blue-400 text-xs font-medium ring-1 ring-inset ring-blue-500/20">
+                  CNAME
+                </span>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between gap-2 p-2 bg-black/20 rounded-lg">
+                    <div className="min-w-0">
+                      <span className="text-[10px] text-white/40 uppercase block mb-0.5">
+                        Name
+                      </span>
+                      <span className="font-mono text-white text-sm">
+                        {cnameName}
+                      </span>
+                    </div>
+                    <button
+                      onClick={() =>
+                        handleCopy(cnameName, `cname-name-${domain.id}`)
+                      }
+                      className="p-2 hover:bg-white/10 rounded-lg text-white/40 hover:text-white transition-colors shrink-0"
+                    >
+                      {copiedField === `cname-name-${domain.id}` ? (
+                        <Check className="w-4 h-4 text-green-400" />
+                      ) : (
+                        <Copy className="w-4 h-4" />
+                      )}
+                    </button>
+                  </div>
+                  <div className="flex items-center justify-between gap-2 p-2 bg-black/20 rounded-lg">
+                    <div className="min-w-0 flex-1">
+                      <span className="text-[10px] text-white/40 uppercase block mb-0.5">
+                        Value
+                      </span>
+                      <span className="font-mono text-white/80 text-sm block truncate">
+                        {cnameValue}
+                      </span>
+                    </div>
+                    <button
+                      onClick={() =>
+                        handleCopy(cnameValue, `cname-value-${domain.id}`)
+                      }
+                      className="p-2 hover:bg-white/10 rounded-lg text-white/40 hover:text-white transition-colors shrink-0"
+                    >
+                      {copiedField === `cname-value-${domain.id}` ? (
+                        <Check className="w-4 h-4 text-green-400" />
+                      ) : (
+                        <Copy className="w-4 h-4" />
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* TXT Record */}
+            <div className="bg-white/5 rounded-lg border border-white/5 overflow-hidden">
+              <div className="p-3 space-y-3">
+                <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-purple-500/10 text-purple-400 text-xs font-medium ring-1 ring-inset ring-purple-500/20">
+                  TXT
+                </span>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between gap-2 p-2 bg-black/20 rounded-lg">
+                    <div className="min-w-0 flex-1">
+                      <span className="text-[10px] text-white/40 uppercase block mb-0.5">
+                        Name
+                      </span>
+                      <span className="font-mono text-white text-sm block truncate">
+                        {txtName}
+                      </span>
+                    </div>
+                    <button
+                      onClick={() =>
+                        handleCopy(txtName, `txt-name-${domain.id}`)
+                      }
+                      className="p-2 hover:bg-white/10 rounded-lg text-white/40 hover:text-white transition-colors shrink-0"
+                    >
+                      {copiedField === `txt-name-${domain.id}` ? (
+                        <Check className="w-4 h-4 text-green-400" />
+                      ) : (
+                        <Copy className="w-4 h-4" />
+                      )}
+                    </button>
+                  </div>
+                  <div className="flex items-center justify-between gap-2 p-2 bg-black/20 rounded-lg">
+                    <div className="min-w-0 flex-1">
+                      <span className="text-[10px] text-white/40 uppercase block mb-0.5">
+                        Value
+                      </span>
+                      <span className="font-mono text-white/80 text-sm block truncate">
+                        {txtValue}
+                      </span>
+                    </div>
+                    <button
+                      onClick={() =>
+                        handleCopy(txtValue, `txt-value-${domain.id}`)
+                      }
+                      className="p-2 hover:bg-white/10 rounded-lg text-white/40 hover:text-white transition-colors shrink-0"
+                    >
+                      {copiedField === `txt-value-${domain.id}` ? (
+                        <Check className="w-4 h-4 text-green-400" />
+                      ) : (
+                        <Copy className="w-4 h-4" />
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="px-3 sm:px-4 pb-3 sm:pb-4">
+            <button
+              onClick={() => onVerify(domain.id)}
+              disabled={isVerifying}
+              className="w-full py-2.5 bg-white text-black rounded-xl hover:bg-white/90 transition-colors font-medium disabled:opacity-50 text-sm"
+            >
+              {isVerifying ? "Verifying..." : "Verify DNS Records"}
+            </button>
+          </div>
+        </div>
+      )}
 
       <ConfirmModal
         isOpen={confirmState.isOpen}

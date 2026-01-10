@@ -170,8 +170,8 @@ function TunnelsView() {
         </div>
       )}
 
-      <div className="flex items-center justify-between gap-4">
-        <div className="relative flex-1 max-w-md group">
+      <div className="flex items-start sm:items-center justify-between gap-4 flex-wrap">
+        <div className="relative flex-1 min-w-0 max-w-md group">
           <Search
             className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-accent transition-colors"
             size={16}
@@ -184,15 +184,15 @@ function TunnelsView() {
             className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-sm text-gray-300 placeholder-gray-600 focus:outline-none focus:border-accent/50 focus:bg-white/10 transition-all"
           />
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
           <div className="relative">
             <button
               onClick={() => setIsSortOpen(!isSortOpen)}
-              className="flex items-center gap-2 px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-sm text-gray-300 hover:text-white hover:bg-white/10 transition-all min-w-35 justify-between"
+              className="flex items-center gap-2 px-3 sm:px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-sm text-gray-300 hover:text-white hover:bg-white/10 transition-all sm:min-w-35 justify-between"
             >
               <div className="flex items-center gap-2">
                 <ArrowUpDown size={16} />
-                <span className="capitalize">{sortBy}</span>
+                <span className="capitalize hidden sm:inline">{sortBy}</span>
               </div>
             </button>
 
@@ -223,9 +223,10 @@ function TunnelsView() {
             )}
           </div>
 
-          <div className="h-9 w-px bg-white/10 mx-1" />
+          {/* View mode toggle - hidden on mobile (always grid on mobile) */}
+          <div className="hidden sm:block h-9 w-px bg-white/10 mx-1" />
 
-          <div className="flex bg-white/5 border border-white/10 rounded-xl p-1">
+          <div className="hidden sm:flex bg-white/5 border border-white/10 rounded-xl p-1">
             <button
               onClick={() => setViewMode("list")}
               className={`p-2 rounded-lg transition-all ${
@@ -250,24 +251,25 @@ function TunnelsView() {
 
           <button
             onClick={handleNewTunnelClick}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl transition-colors font-medium shadow-lg shadow-white/5 ${
+            className={`flex items-center justify-center gap-2 px-3 sm:px-4 py-2.5 rounded-xl transition-colors font-medium shadow-lg shadow-white/5 ${
               isAtLimit
                 ? "bg-white/10 text-gray-400 cursor-not-allowed"
                 : "bg-white hover:bg-gray-200 text-black"
             }`}
           >
             <Plus size={18} />
-            New Tunnel
+            <span className="hidden sm:inline">New Tunnel</span>
           </button>
         </div>
       </div>
 
+      {/* Grid on mobile, respect viewMode on larger screens */}
       <div
-        className={
+        className={`grid grid-cols-1 gap-4 ${
           viewMode === "grid"
-            ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
-            : "space-y-4"
-        }
+            ? "sm:grid-cols-2 lg:grid-cols-3"
+            : "sm:grid-cols-1"
+        }`}
       >
         {filteredTunnels.length === 0 ? (
           <div className="col-span-full text-center py-12 text-gray-500">
@@ -281,27 +283,29 @@ function TunnelsView() {
               key={tunnel.id}
               to="/$orgSlug/tunnels/$tunnelId"
               params={{ orgSlug, tunnelId: tunnel.id }}
-              className={`block group bg-white/2 border border-white/5 rounded-2xl hover:border-white/10 transition-all ${
-                viewMode === "grid" ? "p-6 h-full flex flex-col" : "p-6"
+              className={`block group bg-white/2 border border-white/5 rounded-2xl hover:border-white/10 transition-all p-4 sm:p-6 ${
+                viewMode === "grid" ? "h-full flex flex-col" : "sm:block"
               }`}
               search={{
                 tab: "overview",
               }}
             >
+              {/* Always use grid-style layout on mobile, respect viewMode on larger screens */}
               <div
                 className={
                   viewMode === "grid"
                     ? "flex flex-col h-full"
-                    : "flex items-center justify-between"
+                    : "flex flex-col sm:flex-row sm:items-center sm:justify-between"
                 }
               >
                 <div
-                  className={`flex items-center gap-4 ${viewMode === "grid" ? "mb-6" : ""}`}
+                  className={`flex items-center gap-3 sm:gap-4 ${viewMode === "grid" ? "mb-4 sm:mb-6" : "mb-4 sm:mb-0"}`}
                 >
-                  <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-500 border border-blue-500/20 shrink-0">
-                    <Globe size={20} />
+                  <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-500 border border-blue-500/20 shrink-0">
+                    <Globe size={18} className="sm:hidden" />
+                    <Globe size={20} className="hidden sm:block" />
                   </div>
-                  <div className="min-w-0">
+                  <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
                       <h3 className="text-sm font-medium text-white truncate">
                         {tunnel.name ||
@@ -326,7 +330,7 @@ function TunnelsView() {
                         {tunnel.url}
                       </span>
                       <button
-                        className="text-gray-600 hover:text-gray-400 transition-colors"
+                        className="text-gray-600 hover:text-gray-400 transition-colors shrink-0"
                         onClick={(e) => {
                           e.preventDefault();
                           navigator.clipboard.writeText(tunnel.url);
@@ -341,19 +345,19 @@ function TunnelsView() {
                 <div
                   className={
                     viewMode === "grid"
-                      ? "mt-auto pt-6 border-t border-white/5 flex items-center justify-between"
-                      : "flex items-center gap-8"
+                      ? "mt-auto pt-4 sm:pt-6 border-t border-white/5 flex items-center justify-between"
+                      : "pt-4 sm:pt-0 border-t sm:border-t-0 border-white/5 flex items-center justify-between sm:gap-8"
                   }
                 >
                   <div
-                    className={`flex items-center ${viewMode === "grid" ? "gap-4 w-full justify-between" : "gap-6"}`}
+                    className={`flex items-center ${viewMode === "grid" ? "gap-4 w-full justify-between" : "gap-4 sm:gap-6 w-full sm:w-auto justify-between sm:justify-start"}`}
                   >
-                    <div className={viewMode === "grid" ? "" : "text-right"}>
+                    <div className={viewMode === "grid" ? "" : "sm:text-right"}>
                       <div className="text-[10px] uppercase tracking-wider text-gray-500 font-medium mb-1">
                         Status
                       </div>
                       <div
-                        className={`flex items-center gap-2 ${viewMode === "grid" ? "" : "justify-end"}`}
+                        className={`flex items-center gap-2 ${viewMode === "grid" ? "" : "sm:justify-end"}`}
                       >
                         <div
                           className={`w-2 h-2 rounded-full ${
@@ -368,13 +372,11 @@ function TunnelsView() {
                       </div>
                     </div>
 
-                    {!viewMode && <div className="h-8 w-px bg-white/5" />}
+                    {!viewMode && (
+                      <div className="hidden sm:block h-8 w-px bg-white/5" />
+                    )}
 
-                    <div
-                      className={
-                        viewMode === "grid" ? "text-right" : "text-right"
-                      }
-                    >
+                    <div className="text-right">
                       <div className="text-[10px] uppercase tracking-wider text-gray-500 font-medium mb-1">
                         Created
                       </div>
@@ -385,7 +387,7 @@ function TunnelsView() {
                   </div>
 
                   {viewMode !== "grid" && (
-                    <button className="p-2 text-gray-500 hover:text-white transition-colors opacity-0 group-hover:opacity-100">
+                    <button className="hidden sm:block p-2 text-gray-500 hover:text-white transition-colors opacity-0 group-hover:opacity-100">
                       <MoreVertical size={16} />
                     </button>
                   )}

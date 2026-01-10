@@ -126,7 +126,7 @@ export function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
 
   return (
     <div
-      className={`${isCollapsed ? "w-15" : "w-56"} flex flex-col transition-all duration-300 ease-in-out bg-[#070707]`}
+      className={`${isCollapsed ? "w-15" : "w-56"} h-full flex flex-col transition-all duration-300 ease-in-out bg-[#070707]`}
     >
       <div
         className={`p-4 flex items-center ${isCollapsed ? "justify-center" : "justify-between"}`}

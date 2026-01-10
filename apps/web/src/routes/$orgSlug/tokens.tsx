@@ -66,25 +66,27 @@ function TokensSettingsView() {
   return (
     <div className="space-y-6">
       <div className="bg-white/2 border border-white/5 rounded-2xl overflow-hidden">
-        <div className="p-6 border-b border-white/5">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-yellow-500/10 rounded-lg">
+        <div className="p-4 sm:p-6 border-b border-white/5">
+          <div className="flex items-start sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="p-2 bg-yellow-500/10 rounded-lg shrink-0">
                 <Key className="w-5 h-5 text-yellow-400" />
               </div>
-              <div>
-                <h3 className="text-lg font-medium text-white">API Tokens</h3>
-                <p className="text-sm text-gray-500">
+              <div className="min-w-0">
+                <h3 className="text-base sm:text-lg font-medium text-white">
+                  API Tokens
+                </h3>
+                <p className="text-xs sm:text-sm text-gray-500">
                   Manage access tokens for the CLI and API
                 </p>
               </div>
             </div>
             <button
               onClick={() => setIsCreating(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-white text-black rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors"
+              className="flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-white text-black rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors shrink-0"
             >
               <Plus size={16} />
-              New Token
+              <span className="hidden sm:inline">New Token</span>
             </button>
           </div>
         </div>

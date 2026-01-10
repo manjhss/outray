@@ -8,6 +8,8 @@ import {
 import { useState, useEffect } from "react";
 import { authClient } from "@/lib/auth-client";
 import { Sidebar } from "@/components/app-sidebar";
+import { MobileBottomNav } from "@/components/mobile-bottom-nav";
+import { MobileHeader } from "@/components/mobile-header";
 import { ArrowRight } from "lucide-react";
 
 export const Route = createFileRoute("/$orgSlug")({
@@ -124,19 +126,28 @@ function DashboardLayout() {
 
   return (
     <div className="min-h-screen bg-[#070707] text-gray-300 font-sans selection:bg-accent/30">
-      <div className="flex h-screen overflow-hidden">
-        <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
+      {/* Mobile header */}
+      <MobileHeader />
 
-        <div className="flex-1 flex flex-col min-w-0 bg-[#101010] border border-white/5 m-2 rounded-2xl">
+      <div className="flex h-[calc(100vh-52px)] md:h-screen overflow-hidden">
+        {/* Desktop sidebar - hidden on mobile */}
+        <div className="hidden md:flex h-full">
+          <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
+        </div>
+
+        <div className="flex-1 flex flex-col min-w-0 bg-[#101010] md:border md:border-white/5 md:m-2 md:rounded-2xl">
           {/* <header className="h-16 border-b border-white/5 flex items-center justify-between px-6 bg-black">
            
           </header> */}
 
-          <div className="flex-1 overflow-y-auto p-6">
+          <div className="flex-1 overflow-y-auto p-4 md:p-6 pb-20 md:pb-6">
             <Outlet />
           </div>
         </div>
       </div>
+
+      {/* Mobile bottom navigation */}
+      <MobileBottomNav />
     </div>
   );
 }

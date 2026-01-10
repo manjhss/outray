@@ -40,21 +40,21 @@ export function TunnelHeader({
 
   return (
     <>
-      <div className="flex items-center gap-4">
+      <div className="flex items-start sm:items-center gap-3 sm:gap-4">
         <Link
           to="/$orgSlug/tunnels"
           params={{ orgSlug: selectedOrganization?.slug! }}
-          className="p-2 text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition-colors"
+          className="p-2 text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition-colors shrink-0"
         >
           <ArrowLeft size={20} />
         </Link>
-        <div className="flex-1">
-          <div className="flex items-center gap-3 mb-1">
-            <h2 className="text-2xl font-bold text-white tracking-tight">
+        <div className="flex-1 min-w-0">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-1">
+            <h2 className="text-lg sm:text-2xl font-bold text-white tracking-tight truncate">
               {tunnel.name || tunnel.id}
             </h2>
             <span
-              className={`px-2.5 py-0.5 rounded-full text-xs font-medium border flex items-center gap-1.5 ${
+              className={`px-2 sm:px-2.5 py-0.5 rounded-full text-xs font-medium border flex items-center gap-1.5 shrink-0 ${
                 tunnel.isOnline
                   ? "bg-green-500/10 text-green-500 border-green-500/20"
                   : "bg-red-500/10 text-red-500 border-red-500/20"
@@ -66,11 +66,11 @@ export function TunnelHeader({
               {tunnel.isOnline ? "Online" : "Offline"}
             </span>
           </div>
-          <div className="flex items-center gap-2 text-sm text-gray-500">
-            <Globe size={14} />
-            <span className="font-mono">{tunnel.url}</span>
+          <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-500">
+            <Globe size={14} className="shrink-0" />
+            <span className="font-mono truncate">{tunnel.url}</span>
             <button
-              className="hover:text-white transition-colors"
+              className="hover:text-white transition-colors shrink-0"
               onClick={() => navigator.clipboard.writeText(tunnel.url)}
             >
               <Copy size={12} />
@@ -79,15 +79,15 @@ export function TunnelHeader({
               href={tunnel.url}
               target="_blank"
               rel="noreferrer"
-              className="hover:text-white transition-colors"
+              className="hover:text-white transition-colors shrink-0"
             >
               <ExternalLink size={12} />
             </a>
           </div>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
           <button
-            className="flex items-center gap-2 px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-xl border border-red-500/20 transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-xl border border-red-500/20 transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             onClick={() => {
               setConfirmState({
                 isOpen: true,

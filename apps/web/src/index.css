@@ -45,3 +45,8 @@ body {
   color: var(--color-fd-foreground);
   font-family: "Geom", sans-serif;
 }
+
+/* Safe area padding for mobile devices with notches */
+.safe-area-pb {
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}

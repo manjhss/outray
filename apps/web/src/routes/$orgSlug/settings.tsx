@@ -32,17 +32,17 @@ function SettingsLayout() {
     <div className="space-y-6 max-w-4xl mx-auto">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white tracking-tight">
+          <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
             Settings
           </h1>
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="text-xs sm:text-sm text-gray-500 mt-1">
             Manage your account settings and preferences
           </p>
         </div>
       </div>
 
-      <div className="border-b border-white/10">
-        <div className="flex items-center gap-6">
+      <div className="border-b border-white/10 overflow-x-auto">
+        <div className="flex items-center gap-4 sm:gap-6">
           {tabs.map((tab) => (
             <Link
               key={tab.to}
