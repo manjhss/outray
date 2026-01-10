@@ -47,12 +47,13 @@ function BillingView() {
       billing: ["manage"],
     });
 
-  const { data: session } = useQuery({
+  const { data: session, isPending: isSessionLoading } = useQuery({
     queryKey: ["session"],
     queryFn: async () => {
       const { data } = await authClient.getSession();
       return data;
     },
+    staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
   const { data, isLoading } = useQuery({
@@ -95,6 +96,17 @@ function BillingView() {
   const monthlyCost = calculatePlanCost(currentPlan as any);
 
   const handleCheckout = async (plan: "ray" | "beam" | "pulse") => {
+    if (isSessionLoading) {
+      // Session is still loading, wait a moment and check again
+      setAlertState({
+        isOpen: true,
+        title: "Please Wait",
+        message: "Loading your session. Please try again in a moment.",
+        type: "info",
+      });
+      return;
+    }
+
     if (!selectedOrganizationId || !session?.user) {
       setAlertState({
         isOpen: true,
