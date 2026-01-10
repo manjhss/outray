@@ -87,13 +87,13 @@ export function OrganizationDropdown({
                   setIsOrgDropdownOpen(false);
                 }}
                 className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors ${
-                  selectedOrg?.id === org.id
+                  orgSlug === org.slug
                     ? "bg-accent/10 text-accent"
                     : "text-gray-400 hover:text-white hover:bg-white/5"
                 }`}
               >
                 <span className="truncate">{org.name}</span>
-                {selectedOrg?.id === org.id && <Check size={14} />}
+                {orgSlug === org.slug && <Check size={14} />}
               </Link>
             ))}
           </div>
