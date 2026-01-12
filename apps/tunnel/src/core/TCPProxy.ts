@@ -9,6 +9,7 @@ import {
 } from "./Protocol";
 import { generateId, getBandwidthKey } from "../../../../shared/utils";
 import { protocolLogger } from "../lib/tigerdata";
+import { PortAllocator } from "./PortAllocator";
 
 interface TCPConnection {
   socket: net.Socket;
@@ -35,8 +36,7 @@ interface TCPTunnel {
 export class TCPProxy {
   private tunnels = new Map<string, TCPTunnel>();
   private connectionToTunnel = new Map<string, string>();
-  private portRange: { min: number; max: number };
-  private usedPorts = new Set<number>();
+  private portAllocator: PortAllocator;
   private redis?: Redis;
 
   constructor(
@@ -44,7 +44,7 @@ export class TCPProxy {
     portRangeMax: number = 30000,
     redis?: Redis,
   ) {
-    this.portRange = { min: portRangeMin, max: portRangeMax };
+    this.portAllocator = new PortAllocator(portRangeMin, portRangeMax);
     this.redis = redis;
   }
 
@@ -58,7 +58,7 @@ export class TCPProxy {
     // Clean up existing tunnel if any
     await this.closeTunnel(tunnelId);
 
-    const port = requestedPort || this.findAvailablePort();
+    const port = this.portAllocator.allocate(requestedPort);
     if (!port) {
       return { success: false, error: "No available ports" };
     }
@@ -70,13 +70,13 @@ export class TCPProxy {
 
       server.on("error", (err) => {
         console.error(`TCP Server error for tunnel ${tunnelId}:`, err);
-        this.usedPorts.delete(port);
+        this.portAllocator.release(port);
         resolve({ success: false, error: err.message });
       });
 
       server.listen(port, () => {
         console.log(`TCP tunnel ${tunnelId} listening on port ${port}`);
-        this.usedPorts.add(port);
+        // Port already marked as used by allocator
 
         const tunnel: TCPTunnel = {
           server,
@@ -101,14 +101,7 @@ export class TCPProxy {
     }
   }
 
-  private findAvailablePort(): number | null {
-    for (let port = this.portRange.min; port <= this.portRange.max; port++) {
-      if (!this.usedPorts.has(port)) {
-        return port;
-      }
-    }
-    return null;
-  }
+  // Port allocation is now handled by PortAllocator with O(1) complexity
 
   private handleConnection(tunnelId: string, socket: net.Socket): void {
     const tunnel = this.tunnels.get(tunnelId);
@@ -321,7 +314,7 @@ export class TCPProxy {
     // Close server
     return new Promise((resolve) => {
       tunnel.server.close(() => {
-        this.usedPorts.delete(tunnel.port);
+        this.portAllocator.release(tunnel.port);
         this.tunnels.delete(tunnelId);
         console.log(`TCP tunnel ${tunnelId} closed`);
         resolve();

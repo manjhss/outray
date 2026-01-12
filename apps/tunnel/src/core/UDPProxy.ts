@@ -4,6 +4,7 @@ import Redis from "ioredis";
 import { Protocol, UDPDataMessage, UDPResponseMessage } from "./Protocol";
 import { generateId, getBandwidthKey } from "../../../../shared/utils";
 import { protocolLogger } from "../lib/tigerdata";
+import { PortAllocator } from "./PortAllocator";
 
 interface UDPClient {
   address: string;
@@ -30,8 +31,7 @@ export class UDPProxy {
     string,
     { tunnelId: string; clientKey: string }
   >();
-  private portRange: { min: number; max: number };
-  private usedPorts = new Set<number>();
+  private portAllocator: PortAllocator;
   private clientTimeout = 60000; // 60 seconds
   private redis?: Redis;
 
@@ -40,7 +40,7 @@ export class UDPProxy {
     portRangeMax: number = 40000,
     redis?: Redis,
   ) {
-    this.portRange = { min: portRangeMin, max: portRangeMax };
+    this.portAllocator = new PortAllocator(portRangeMin, portRangeMax);
     this.redis = redis;
     // Periodically clean up stale clients
     setInterval(() => this.cleanupStaleClients(), 30000);
@@ -56,7 +56,7 @@ export class UDPProxy {
     // Clean up existing tunnel if any
     await this.closeTunnel(tunnelId);
 
-    const port = requestedPort || this.findAvailablePort();
+    const port = this.portAllocator.allocate(requestedPort);
     if (!port) {
       return { success: false, error: "No available ports" };
     }
@@ -66,7 +66,11 @@ export class UDPProxy {
 
       socket.on("error", (err) => {
         console.error(`UDP Socket error for tunnel ${tunnelId}:`, err);
-        this.usedPorts.delete(port);
+        socket.close(() => {
+          this.tunnels.delete(tunnelId);
+          this.portAllocator.release(port);
+          resolve({ success: false, error: err.message });
+        });
         resolve({ success: false, error: err.message });
       });
 
@@ -76,7 +80,7 @@ export class UDPProxy {
 
       socket.bind(port, () => {
         console.log(`UDP tunnel ${tunnelId} listening on port ${port}`);
-        this.usedPorts.add(port);
+        // Port already marked as used by allocator
 
         const tunnel: UDPTunnel = {
           socket,
@@ -101,14 +105,7 @@ export class UDPProxy {
     }
   }
 
-  private findAvailablePort(): number | null {
-    for (let port = this.portRange.min; port <= this.portRange.max; port++) {
-      if (!this.usedPorts.has(port)) {
-        return port;
-      }
-    }
-    return null;
-  }
+  // Port allocation is now handled by PortAllocator with O(1) complexity
 
   private async handleMessage(
     tunnelId: string,
@@ -290,7 +287,7 @@ export class UDPProxy {
 
     return new Promise((resolve) => {
       tunnel.socket.close(() => {
-        this.usedPorts.delete(tunnel.port);
+        this.portAllocator.release(tunnel.port);
         this.tunnels.delete(tunnelId);
         console.log(`UDP tunnel ${tunnelId} closed`);
         resolve();
