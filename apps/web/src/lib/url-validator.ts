@@ -14,7 +14,7 @@ const PRIVATE_IP_RANGES = [
   /^192\.0\.0\./,              // 192.0.0.0/24 (IETF Protocol Assignments)
   /^192\.0\.2\./,              // 192.0.2.0/24 (TEST-NET-1)
   /^192\.88\.99\./,            // 192.88.99.0/24 (6to4 relay anycast)
-  /^198\.1[8-9]\./,            // 198.18.0.0/15 (benchmarking)
+  /^198\.(1[8-9])\./,          // 198.18.0.0/15 (benchmarking)
   /^198\.51\.100\./,           // 198.51.100.0/24 (TEST-NET-2)
   /^203\.0\.113\./,            // 203.0.113.0/24 (TEST-NET-3)
   /^224\./,                    // 224.0.0.0/4 (multicast)
@@ -60,12 +60,43 @@ function isIPv4(str: string): boolean {
 }
 
 /**
- * Check if a string is a valid IPv6 address (simplified check)
+ * Check if a string is a valid IPv6 address
+ * Note: This is a simplified validation that covers most IPv6 formats.
+ * For production use with complex IPv6 scenarios, consider using a dedicated library.
  */
 function isIPv6(str: string): boolean {
-  // Basic IPv6 pattern - matches standard and compressed formats
-  const ipv6Pattern = /^(([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|::)$/;
-  return ipv6Pattern.test(str);
+  // IPv6 addresses contain colons and hex digits
+  if (!str.includes(':')) {
+    return false;
+  }
+  
+  // Basic validation: check for valid hex segments separated by colons
+  // Handles standard format (8 groups of 4 hex digits) and compressed format (::)
+  const segments = str.split(':');
+  
+  // IPv6 should have 2-8 segments (compressed format can have fewer)
+  if (segments.length < 2 || segments.length > 8) {
+    return false;
+  }
+  
+  // Check if it contains "::" (compression)
+  const hasCompression = str.includes('::');
+  
+  // Each non-empty segment should be 1-4 hex digits
+  for (const segment of segments) {
+    if (segment.length > 0) {
+      if (segment.length > 4 || !/^[0-9a-fA-F]+$/.test(segment)) {
+        return false;
+      }
+    }
+  }
+  
+  // If no compression, must have exactly 8 segments
+  if (!hasCompression && segments.length !== 8) {
+    return false;
+  }
+  
+  return true;
 }
 
 /**
@@ -110,10 +141,9 @@ function isSuspiciousHostname(hostname: string): boolean {
     return true;
   }
   
-  // Block extremely short domains (likely suspicious)
-  // but allow single letter domains with TLD like a.com
-  const parts = hostname.split('.');
-  if (parts.length < 2 && !hostname.includes(':')) {
+  // Block single-part hostnames (no dots) as they're often suspicious
+  // This prevents things like "localhost" variations that aren't caught elsewhere
+  if (!hostname.includes('.') && !hostname.startsWith('[')) {
     return true;
   }
   
