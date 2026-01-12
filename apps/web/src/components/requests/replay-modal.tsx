@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { X, Play, Loader2, Clock, ArrowRight, CheckCircle2, XCircle, AlertCircle, Plus, Trash2, Edit3, FileText, ListTree } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import type { TunnelEvent, RequestCapture } from "./types";
@@ -44,6 +44,9 @@ export function ReplayModal({ isOpen, onClose, request, capture, orgSlug }: Repl
   } | null>(null);
 
   const hasBody = !['GET', 'HEAD'].includes(method);
+
+  // Ref for scrolling to result
+  const resultRef = useRef<HTMLDivElement>(null);
 
   // Initialize editable state from capture
   useEffect(() => {
@@ -127,6 +130,11 @@ export function ReplayModal({ isOpen, onClose, request, capture, orgSlug }: Repl
         body: data.body,
         duration: data.duration,
       });
+
+      // Scroll to result after a short delay to let it render
+      setTimeout(() => {
+        resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to replay request');
     } finally {
@@ -392,25 +400,6 @@ export function ReplayModal({ isOpen, onClose, request, capture, orgSlug }: Repl
             </div>
           )}
 
-          {/* Send button */}
-          <button
-            onClick={handleReplay}
-            disabled={replaying || !url}
-            className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-accent hover:bg-accent/90 disabled:bg-accent/50 disabled:cursor-not-allowed text-white rounded-xl font-medium transition-colors"
-          >
-            {replaying ? (
-              <>
-                <Loader2 size={18} className="animate-spin" />
-                Sending...
-              </>
-            ) : (
-              <>
-                <Play size={18} />
-                Send Request
-              </>
-            )}
-          </button>
-
           {/* Error state */}
           {error && (
             <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4">
@@ -426,7 +415,7 @@ export function ReplayModal({ isOpen, onClose, request, capture, orgSlug }: Repl
 
           {/* Result */}
           {result && (
-            <div className="space-y-4">
+            <div ref={resultRef} className="space-y-4">
               {/* Response summary */}
               <div className="flex items-center gap-4 p-4 bg-white/5 rounded-xl border border-white/10">
                 <div className="flex-1">
@@ -509,9 +498,28 @@ export function ReplayModal({ isOpen, onClose, request, capture, orgSlug }: Repl
 
         {/* Footer */}
         <div className="p-4 border-t border-white/10 bg-white/2">
-          <div className="flex items-center gap-2 text-xs text-gray-500">
-            <Clock size={12} />
-            <span>Request will be sent directly from your browser</span>
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-2 text-xs text-gray-500">
+              <Clock size={12} />
+              <span>Request will be sent directly from your browser</span>
+            </div>
+            <button
+              onClick={handleReplay}
+              disabled={replaying || !url}
+              className="flex items-center justify-center gap-2 px-6 py-2.5 bg-accent hover:bg-accent/90 disabled:bg-accent/50 disabled:cursor-not-allowed text-white rounded-xl font-medium transition-colors"
+            >
+              {replaying ? (
+                <>
+                  <Loader2 size={18} className="animate-spin" />
+                  Sending...
+                </>
+              ) : (
+                <>
+                  <Play size={18} />
+                  Send Request
+                </>
+              )}
+            </button>
           </div>
         </div>
       </motion.div>
