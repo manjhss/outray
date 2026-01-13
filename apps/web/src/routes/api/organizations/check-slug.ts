@@ -4,6 +4,7 @@ import { eq } from "drizzle-orm";
 import { auth } from "../../../lib/auth";
 import { db } from "../../../db";
 import { organizations } from "../../../db/auth-schema";
+import { isReservedSlug } from "../../../../shared/reserved-slugs";
 
 export const Route = createFileRoute("/api/organizations/check-slug")({
   server: {
@@ -19,6 +20,11 @@ export const Route = createFileRoute("/api/organizations/check-slug")({
 
         if (!slug) {
           return json({ error: "Slug is required" }, { status: 400 });
+        }
+
+        // Check if slug is reserved
+        if (isReservedSlug(slug)) {
+          return json({ available: false, reason: "reserved" });
         }
 
         const existingOrg = await db.query.organizations.findFirst({
