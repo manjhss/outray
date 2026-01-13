@@ -52,7 +52,13 @@ body {
 }
 
 /* Ensure interactive elements show pointer cursor */
-button,
-[role="button"] {
+button:not(:disabled),
+[role="button"]:not([aria-disabled="true"]) {
   cursor: pointer;
+}
+
+/* Disabled buttons should indicate they are not clickable */
+button:disabled,
+[role="button"][aria-disabled="true"] {
+  cursor: not-allowed;
 }
