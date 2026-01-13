@@ -70,7 +70,7 @@ function Onboarding() {
           setIsSlugAvailable(false);
           setError(
             data.reason === "reserved"
-              ? "This slug is reserved and cannot be used."
+              ? "This slug is reserved. Contact support@outray.dev to claim it."
               : "This slug is already taken."
           );
         }
