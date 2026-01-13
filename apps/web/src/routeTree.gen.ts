@@ -47,6 +47,8 @@ import { Route as ApiSubscriptionsOrganizationIdRouteImport } from './routes/api
 import { Route as ApiOrganizationsCheckSlugRouteImport } from './routes/api/organizations/check-slug'
 import { Route as ApiMeOrgsRouteImport } from './routes/api/me/orgs'
 import { Route as ApiDomainVerifyOwnershipRouteImport } from './routes/api/domain/verify-ownership'
+import { Route as ApiDashboardWsTokenRouteImport } from './routes/api/dashboard/ws-token'
+import { Route as ApiDashboardValidateWsTokenRouteImport } from './routes/api/dashboard/validate-ws-token'
 import { Route as ApiCliLoginRouteImport } from './routes/api/cli/login'
 import { Route as ApiCliExchangeRouteImport } from './routes/api/cli/exchange'
 import { Route as ApiCliCompleteRouteImport } from './routes/api/cli/complete'
@@ -277,6 +279,17 @@ const ApiDomainVerifyOwnershipRoute =
   ApiDomainVerifyOwnershipRouteImport.update({
     id: '/api/domain/verify-ownership',
     path: '/api/domain/verify-ownership',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiDashboardWsTokenRoute = ApiDashboardWsTokenRouteImport.update({
+  id: '/api/dashboard/ws-token',
+  path: '/api/dashboard/ws-token',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiDashboardValidateWsTokenRoute =
+  ApiDashboardValidateWsTokenRouteImport.update({
+    id: '/api/dashboard/validate-ws-token',
+    path: '/api/dashboard/validate-ws-token',
     getParentRoute: () => rootRouteImport,
   } as any)
 const ApiCliLoginRoute = ApiCliLoginRouteImport.update({
@@ -530,6 +543,8 @@ export interface FileRoutesByFullPath {
   '/api/cli/complete': typeof ApiCliCompleteRoute
   '/api/cli/exchange': typeof ApiCliExchangeRoute
   '/api/cli/login': typeof ApiCliLoginRouteWithChildren
+  '/api/dashboard/validate-ws-token': typeof ApiDashboardValidateWsTokenRoute
+  '/api/dashboard/ws-token': typeof ApiDashboardWsTokenRoute
   '/api/domain/verify-ownership': typeof ApiDomainVerifyOwnershipRoute
   '/api/me/orgs': typeof ApiMeOrgsRoute
   '/api/organizations/check-slug': typeof ApiOrganizationsCheckSlugRoute
@@ -606,6 +621,8 @@ export interface FileRoutesByTo {
   '/api/cli/complete': typeof ApiCliCompleteRoute
   '/api/cli/exchange': typeof ApiCliExchangeRoute
   '/api/cli/login': typeof ApiCliLoginRouteWithChildren
+  '/api/dashboard/validate-ws-token': typeof ApiDashboardValidateWsTokenRoute
+  '/api/dashboard/ws-token': typeof ApiDashboardWsTokenRoute
   '/api/domain/verify-ownership': typeof ApiDomainVerifyOwnershipRoute
   '/api/me/orgs': typeof ApiMeOrgsRoute
   '/api/organizations/check-slug': typeof ApiOrganizationsCheckSlugRoute
@@ -685,6 +702,8 @@ export interface FileRoutesById {
   '/api/cli/complete': typeof ApiCliCompleteRoute
   '/api/cli/exchange': typeof ApiCliExchangeRoute
   '/api/cli/login': typeof ApiCliLoginRouteWithChildren
+  '/api/dashboard/validate-ws-token': typeof ApiDashboardValidateWsTokenRoute
+  '/api/dashboard/ws-token': typeof ApiDashboardWsTokenRoute
   '/api/domain/verify-ownership': typeof ApiDomainVerifyOwnershipRoute
   '/api/me/orgs': typeof ApiMeOrgsRoute
   '/api/organizations/check-slug': typeof ApiOrganizationsCheckSlugRoute
@@ -765,6 +784,8 @@ export interface FileRouteTypes {
     | '/api/cli/complete'
     | '/api/cli/exchange'
     | '/api/cli/login'
+    | '/api/dashboard/validate-ws-token'
+    | '/api/dashboard/ws-token'
     | '/api/domain/verify-ownership'
     | '/api/me/orgs'
     | '/api/organizations/check-slug'
@@ -841,6 +862,8 @@ export interface FileRouteTypes {
     | '/api/cli/complete'
     | '/api/cli/exchange'
     | '/api/cli/login'
+    | '/api/dashboard/validate-ws-token'
+    | '/api/dashboard/ws-token'
     | '/api/domain/verify-ownership'
     | '/api/me/orgs'
     | '/api/organizations/check-slug'
@@ -919,6 +942,8 @@ export interface FileRouteTypes {
     | '/api/cli/complete'
     | '/api/cli/exchange'
     | '/api/cli/login'
+    | '/api/dashboard/validate-ws-token'
+    | '/api/dashboard/ws-token'
     | '/api/domain/verify-ownership'
     | '/api/me/orgs'
     | '/api/organizations/check-slug'
@@ -981,6 +1006,8 @@ export interface RootRouteChildren {
   ApiCliCompleteRoute: typeof ApiCliCompleteRoute
   ApiCliExchangeRoute: typeof ApiCliExchangeRoute
   ApiCliLoginRoute: typeof ApiCliLoginRouteWithChildren
+  ApiDashboardValidateWsTokenRoute: typeof ApiDashboardValidateWsTokenRoute
+  ApiDashboardWsTokenRoute: typeof ApiDashboardWsTokenRoute
   ApiDomainVerifyOwnershipRoute: typeof ApiDomainVerifyOwnershipRoute
   ApiMeOrgsRoute: typeof ApiMeOrgsRoute
   ApiOrganizationsCheckSlugRoute: typeof ApiOrganizationsCheckSlugRoute
@@ -1268,6 +1295,20 @@ declare module '@tanstack/react-router' {
       path: '/api/domain/verify-ownership'
       fullPath: '/api/domain/verify-ownership'
       preLoaderRoute: typeof ApiDomainVerifyOwnershipRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/dashboard/ws-token': {
+      id: '/api/dashboard/ws-token'
+      path: '/api/dashboard/ws-token'
+      fullPath: '/api/dashboard/ws-token'
+      preLoaderRoute: typeof ApiDashboardWsTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/dashboard/validate-ws-token': {
+      id: '/api/dashboard/validate-ws-token'
+      path: '/api/dashboard/validate-ws-token'
+      fullPath: '/api/dashboard/validate-ws-token'
+      preLoaderRoute: typeof ApiDashboardValidateWsTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/cli/login': {
@@ -1704,6 +1745,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiCliCompleteRoute: ApiCliCompleteRoute,
   ApiCliExchangeRoute: ApiCliExchangeRoute,
   ApiCliLoginRoute: ApiCliLoginRouteWithChildren,
+  ApiDashboardValidateWsTokenRoute: ApiDashboardValidateWsTokenRoute,
+  ApiDashboardWsTokenRoute: ApiDashboardWsTokenRoute,
   ApiDomainVerifyOwnershipRoute: ApiDomainVerifyOwnershipRoute,
   ApiMeOrgsRoute: ApiMeOrgsRoute,
   ApiOrganizationsCheckSlugRoute: ApiOrganizationsCheckSlugRoute,
