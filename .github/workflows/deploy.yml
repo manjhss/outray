@@ -88,12 +88,13 @@ jobs:
           REDIS_HEARTBEAT_INTERVAL_MS: "20000"
           TIGER_DATA_URL: ${{ secrets.TIGER_DATA_URL }}
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          INTERNAL_API_SECRET: ${{ secrets.INTERNAL_API_SECRET }}
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT }}
-          envs: REDIS_URL,REDIS_TUNNEL_TTL_SECONDS,REDIS_HEARTBEAT_INTERVAL_MS,TIGER_DATA_URL,DATABASE_URL
+          envs: REDIS_URL,REDIS_TUNNEL_TTL_SECONDS,REDIS_HEARTBEAT_INTERVAL_MS,TIGER_DATA_URL,DATABASE_URL,INTERNAL_API_SECRET
           script: |
             chmod +x /root/outray/deploy.sh
             /root/outray/deploy.sh

@@ -126,7 +126,7 @@ export function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
 
   return (
     <div
-      className={`${isCollapsed ? "w-15" : "w-56"} h-full flex flex-col transition-all duration-300 ease-in-out bg-[#070707]`}
+      className={`${isCollapsed ? "w-15" : "w-56"} h-full flex flex-col motion-safe:transition-all motion-safe:duration-150 motion-safe:ease-in-out motion-reduce:transition-none bg-[#070707] overflow-hidden`}
     >
       <div
         className={`p-4 flex items-center ${isCollapsed ? "justify-center" : "justify-between"}`}
@@ -159,7 +159,7 @@ export function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
         isCollapsed={isCollapsed}
       />
 
-      <div className="flex-1 px-2 py-4 space-y-0.5 overflow-y-auto scrollbar-hide">
+      <div className="flex-1 px-2 py-4 space-y-0.5 overflow-x-hidden overflow-y-auto scrollbar-hide">
         {navItems.map((item) => (
           <NavItem
             key={item.to}
@@ -173,16 +173,17 @@ export function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
         ))}
       </div>
 
-      <div className="p-3 border-t border-white/5 space-y-2 bg-black/20">
-        <PlanUsage
-          activeTunnelsCount={activeTunnelsCount}
-          isCollapsed={isCollapsed}
-          limit={tunnelLimit}
-          currentPlan={currentPlan}
-        />
+      {!isCollapsed && (
+        <div className="px-3 pt-3 border-t border-white/5 bg-black/20">
+          <PlanUsage
+            activeTunnelsCount={activeTunnelsCount}
+            limit={tunnelLimit}
+            currentPlan={currentPlan}
+          />
+        </div>
+      )}
 
-        <UserSection user={user} isCollapsed={isCollapsed} />
-      </div>
+      <UserSection user={user} isCollapsed={isCollapsed} />
     </div>
   );
 }

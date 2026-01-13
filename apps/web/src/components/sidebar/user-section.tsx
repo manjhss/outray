@@ -19,13 +19,18 @@ export function UserSection({ user, isCollapsed }: UserSectionProps) {
   };
 
   return (
-    <div className="p-3 border-t border-white/5 space-y-2 bg-black/20">
+    <div className={`${isCollapsed ? "p-2" : "p-3"} border-t border-white/5 space-y-2 bg-black/20`}>
       <button
         onClick={() => setIsReportBugModalOpen(true)}
-        className={`flex items-center ${isCollapsed ? "justify-center" : "gap-3"} w-full px-3 py-2.5 text-sm text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition-colors group`}
+        className={`flex items-center ${isCollapsed ? "justify-center w-10 h-10" : "gap-3 w-full px-3 py-2.5"} text-sm text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition-colors group relative`}
       >
         <Bug size={20} />
         {!isCollapsed && <span>Report a Bug</span>}
+        {isCollapsed && (
+          <div className="absolute left-full ml-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 border border-white/10">
+            Report a Bug
+          </div>
+        )}
       </button>
 
       <ReportBugModal
@@ -36,7 +41,7 @@ export function UserSection({ user, isCollapsed }: UserSectionProps) {
       />
 
       <div
-        className={`flex items-center ${isCollapsed ? "justify-center" : "gap-3"} px-2 py-2 mt-2 rounded-xl hover:bg-white/5 transition-colors cursor-pointer group border border-transparent hover:border-white/5`}
+        className={`flex items-center ${isCollapsed ? "justify-center" : "gap-3"} ${isCollapsed ? "w-10 h-10" : "px-2 py-2"} rounded-xl hover:bg-white/5 transition-colors cursor-pointer group border border-transparent hover:border-white/5 relative`}
       >
         <div className="w-9 h-9 rounded-full bg-linear-to-tr from-accent to-orange-600 flex items-center justify-center text-black font-bold text-xs shadow-lg shadow-accent/20 shrink-0">
           {user?.name?.substring(0, 2).toUpperCase() || "U"}
@@ -58,6 +63,11 @@ export function UserSection({ user, isCollapsed }: UserSectionProps) {
               <LogOut size={16} />
             </button>
           </>
+        )}
+        {isCollapsed && (
+          <div className="absolute left-full ml-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 border border-white/10">
+            {user?.name || "User"}
+          </div>
         )}
       </div>
     </div>

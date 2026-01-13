@@ -1,4 +1,6 @@
 import { Link } from "@tanstack/react-router";
+import { cloneElement } from "react";
+import type { LucideProps } from "lucide-react";
 
 interface NavItemProps {
   icon: React.ReactNode;
@@ -17,6 +19,11 @@ export function NavItem({
   isCollapsed,
   params,
 }: NavItemProps) {
+  // Clone icon with dynamic size based on collapsed state
+  const dynamicIcon = cloneElement(icon as React.ReactElement<LucideProps>, {
+    size: isCollapsed ? 20 : 14,
+  });
+
   return (
     <Link
       to={to}
@@ -30,15 +37,11 @@ export function NavItem({
           "text-gray-400 hover:text-white hover:bg-white/5 border border-transparent",
       }}
       activeOptions={activeOptions}
-      className={`flex items-center ${isCollapsed ? "justify-center px-2" : "gap-3 px-3"} w-full py-1 text-sm rounded-xl transition-all duration-200 group relative`}
+      className={`flex items-center ${isCollapsed ? "justify-center px-2 py-2.5" : "gap-3 px-3 py-1"} w-full text-sm rounded-xl transition-all duration-200 group relative`}
+      title={isCollapsed ? label : undefined}
     >
-      {icon}
+      {dynamicIcon}
       {!isCollapsed && <span>{label}</span>}
-      {isCollapsed && (
-        <div className="absolute left-full ml-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 border border-white/10">
-          {label}
-        </div>
-      )}
     </Link>
   );
 }
