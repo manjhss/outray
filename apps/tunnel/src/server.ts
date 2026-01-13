@@ -75,16 +75,51 @@ const wsHandler = new WSHandler(wssTunnel, router, tcpProxy, udpProxy);
 
 console.log("✅ TCP/UDP tunnel support enabled");
 
-wssDashboard.on("connection", (ws, req) => {
-  const url = new URL(req.url || "", "http://localhost");
-  const orgId = url.searchParams.get("orgId");
+const webApiUrl = process.env.WEB_API_URL || "http://localhost:3000/api";
 
-  if (!orgId) {
-    ws.close(1008, "Organization ID required");
+async function validateDashboardToken(token: string): Promise<{
+  valid: boolean;
+  orgId?: string;
+  userId?: string;
+  error?: string;
+}> {
+  try {
+    const response = await fetch(`${webApiUrl}/dashboard/validate-ws-token`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token }),
+    });
+    return (await response.json()) as {
+      valid: boolean;
+      orgId?: string;
+      userId?: string;
+      error?: string;
+    };
+  } catch (error) {
+    console.error("Failed to validate dashboard token:", error);
+    return { valid: false, error: "Internal server error" };
+  }
+}
+
+wssDashboard.on("connection", async (ws, req) => {
+  const url = new URL(req.url || "", "http://localhost");
+  const token = url.searchParams.get("token");
+
+  if (!token) {
+    ws.close(1008, "Authentication token required");
     return;
   }
 
-  logManager.subscribe(orgId, ws);
+  // Validate the token with the web API
+  const authResult = await validateDashboardToken(token);
+
+  if (!authResult.valid || !authResult.orgId) {
+    ws.close(1008, authResult.error || "Authentication failed");
+    return;
+  }
+
+  console.log(`Dashboard WebSocket authenticated for org: ${authResult.orgId}`);
+  logManager.subscribe(authResult.orgId, ws);
 });
 
 httpServer.on("upgrade", (request, socket, head) => {
