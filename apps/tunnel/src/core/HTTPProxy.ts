@@ -31,6 +31,14 @@ export class HTTPProxy {
     const cleanHost = host.split(":")[0].toLowerCase();
     const tunnelId = cleanHost;
 
+    // Redirect outray.app to outray.dev
+    if (cleanHost === "outray.app" || cleanHost === "www.outray.app") {
+      const newUrl = `https://outray.dev${req.url || ""}`;
+      res.writeHead(301, { Location: newUrl });
+      res.end();
+      return;
+    }
+
     if (tunnelId === this.baseDomain.toLowerCase()) {
       res.writeHead(404, { "Content-Type": "text/plain" });
       res.end("Tunnel not found");
