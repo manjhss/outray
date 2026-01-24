@@ -7,6 +7,11 @@ import { appClient } from "@/lib/app-client";
 import { useAdminStore } from "@/lib/admin-store";
 
 export const Route = createFileRoute("/admin/organizations/$slug")({
+  head: () => ({
+    meta: [
+      { title: "Organization Details - OutRay" },
+    ],
+  }),
   component: AdminOrganizationDetailPage,
 });
 
