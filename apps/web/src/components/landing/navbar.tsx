@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Sparkles, LogIn, Menu, X, ChevronDown, Mail, Headphones, Activity, Bug } from "lucide-react";
+import {  Menu, X, ChevronDown, Mail, Headphones, Activity, Bug } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { authClient } from "@/lib/auth-client";
 import { SiGithub, SiVite, SiNextdotjs } from "react-icons/si";
