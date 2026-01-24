@@ -3,6 +3,11 @@ import { useEffect, useState } from "react";
 import { authClient } from "@/lib/auth-client";
 
 export const Route = createFileRoute("/invitations/accept")({
+  head: () => ({
+    meta: [
+      { title: "Accept Invitation - OutRay" },
+    ],
+  }),
   component: AcceptInvitation,
   validateSearch: (search: Record<string, unknown>): { token: string } => {
     return {
