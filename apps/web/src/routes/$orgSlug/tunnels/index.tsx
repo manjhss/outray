@@ -19,6 +19,11 @@ import { NewTunnelModal } from "@/components/new-tunnel-modal";
 import { LimitModal } from "@/components/limit-modal";
 
 export const Route = createFileRoute("/$orgSlug/tunnels/")({
+  head: () => ({
+    meta: [
+      { title: "Tunnels - OutRay" },
+    ],
+  }),
   component: TunnelsView,
 });
 
