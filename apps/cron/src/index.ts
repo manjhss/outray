@@ -23,6 +23,83 @@ async function connectTimescaleDB() {
 }
 
 let isSampling = false;
+let isCleaning = false;
+
+/**
+ * Cleans up stale entries from org:*:online_tunnels sets.
+ * 
+ * This handles cases where tunnels disconnect but their entries aren't properly
+ * removed from Redis (e.g., server crash, network issues, or bugs where hostname
+ * was used instead of dbTunnelId).
+ * 
+ * A tunnel is considered stale if:
+ * 1. Its `tunnel:last_seen:{id}` key has expired (doesn't exist), OR
+ * 2. The ID is not a valid UUID (legacy bug - hostname was used instead of dbTunnelId)
+ */
+async function cleanupStaleTunnels() {
+  if (isCleaning) {
+    console.warn("Skipping cleanup: previous run still active");
+    return;
+  }
+  isCleaning = true;
+
+  try {
+    console.log("Cleaning up stale tunnel entries...");
+    let totalRemoved = 0;
+    let totalChecked = 0;
+
+    // UUID regex pattern
+    const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+    // Scan all org:*:online_tunnels sets
+    let cursor = "0";
+    do {
+      const [nextCursor, keys] = await redis.scan(
+        cursor,
+        "MATCH",
+        "org:*:online_tunnels",
+        "COUNT",
+        100,
+      );
+      cursor = nextCursor;
+
+      for (const setKey of keys) {
+        // Get all members of this set
+        const members = await redis.smembers(setKey);
+        
+        for (const tunnelId of members) {
+          totalChecked++;
+          
+          // Check if this is a valid UUID (dbTunnelId) or a hostname (legacy bug)
+          if (!uuidPattern.test(tunnelId)) {
+            // This is a hostname, not a UUID - it's a stale entry from the old bug
+            await redis.srem(setKey, tunnelId);
+            console.log(`Removed stale hostname entry: ${tunnelId} from ${setKey}`);
+            totalRemoved++;
+            continue;
+          }
+
+          // Check if the tunnel:last_seen key exists (valid UUID entries)
+          const lastSeenKey = `tunnel:last_seen:${tunnelId}`;
+          const exists = await redis.exists(lastSeenKey);
+          
+          if (!exists) {
+            // No last_seen key means the tunnel is offline but wasn't cleaned up
+            await redis.srem(setKey, tunnelId);
+            console.log(`Removed stale UUID entry: ${tunnelId} from ${setKey}`);
+            totalRemoved++;
+          }
+        }
+      }
+    } while (cursor !== "0");
+
+    console.log(`Cleanup complete: checked ${totalChecked} entries, removed ${totalRemoved} stale entries`);
+  } catch (error) {
+    console.error("Failed to cleanup stale tunnels:", error);
+  } finally {
+    isCleaning = false;
+  }
+}
 
 async function sampleActiveTunnels() {
   if (isSampling) {
@@ -75,8 +152,13 @@ async function start() {
 
   // Initial run
   await sampleActiveTunnels();
+  await cleanupStaleTunnels();
 
+  // Sample active tunnels every minute
   setInterval(sampleActiveTunnels, 60_000);
+  
+  // Cleanup stale tunnel entries every 5 minutes
+  setInterval(cleanupStaleTunnels, 5 * 60_000);
 }
 
 start();
