@@ -13,6 +13,11 @@ import {
 } from "@/components/requests";
 
 export const Route = createFileRoute("/$orgSlug/requests")({
+  head: () => ({
+    meta: [
+      { title: "Requests - OutRay" },
+    ],
+  }),
   component: RequestsView,
 });
 
