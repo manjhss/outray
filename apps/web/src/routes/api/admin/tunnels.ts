@@ -27,30 +27,28 @@ export const Route = createFileRoute("/api/admin/tunnels")({
 
         try {
           const url = new URL(request.url);
-          const page = Math.max(1, parseInt(url.searchParams.get("page") || "1") || 1);
-          const limit = Math.min(100, Math.max(1, parseInt(url.searchParams.get("limit") || "20") || 20));
+          const page = Math.max(
+            1,
+            parseInt(url.searchParams.get("page") || "1") || 1,
+          );
+          const limit = Math.min(
+            100,
+            Math.max(1, parseInt(url.searchParams.get("limit") || "20") || 20),
+          );
           const search = url.searchParams.get("search") || "";
           const protocol = url.searchParams.get("protocol") || "";
           const activeOnly = url.searchParams.get("active") === "true";
           const offset = (page - 1) * limit;
 
-          // Get all online tunnel IDs from Redis (scan all org sets)
+          // Get all online tunnel IDs from Redis using global index (O(1) lookup)
           const onlineTunnelIds = new Set<string>();
-          let cursor = "0";
-          do {
-            const [nextCursor, keys] = await redis.scan(
-              cursor,
-              "MATCH",
-              "org:*:online_tunnels",
-              "COUNT",
-              100
-            );
-            cursor = nextCursor;
-            for (const key of keys) {
-              const ids = await redis.smembers(key);
-              ids.forEach((id) => onlineTunnelIds.add(id));
-            }
-          } while (cursor !== "0");
+          const orgIds = await redis.smembers(
+            "global:orgs_with_online_tunnels",
+          );
+          for (const orgId of orgIds) {
+            const ids = await redis.smembers(`org:${orgId}:online_tunnels`);
+            ids.forEach((id) => onlineTunnelIds.add(id));
+          }
 
           // Build conditions
           const conditions = [];
@@ -59,8 +57,8 @@ export const Route = createFileRoute("/api/admin/tunnels")({
             conditions.push(
               or(
                 like(tunnels.url, `%${search}%`),
-                like(tunnels.name, `%${search}%`)
-              )
+                like(tunnels.name, `%${search}%`),
+              ),
             );
           }
 
@@ -90,7 +88,7 @@ export const Route = createFileRoute("/api/admin/tunnels")({
             conditions.length > 0
               ? sql`${sql.join(
                   conditions.map((c) => sql`(${c})`),
-                  sql` AND `
+                  sql` AND `,
                 )}`
               : undefined;
 
@@ -118,7 +116,10 @@ export const Route = createFileRoute("/api/admin/tunnels")({
             })
             .from(tunnels)
             .leftJoin(users, eq(tunnels.userId, users.id))
-            .leftJoin(organizations, eq(tunnels.organizationId, organizations.id))
+            .leftJoin(
+              organizations,
+              eq(tunnels.organizationId, organizations.id),
+            )
             .orderBy(desc(tunnels.lastSeenAt))
             .limit(limit)
             .offset(offset);
@@ -151,13 +152,16 @@ export const Route = createFileRoute("/api/admin/tunnels")({
               total: totalResult.count,
               active: onlineTunnelIds.size,
               byProtocol: Object.fromEntries(
-                protocolStats.map((p) => [p.protocol, p.count])
+                protocolStats.map((p) => [p.protocol, p.count]),
               ),
             },
           });
         } catch (error) {
           console.error("Admin tunnels error:", error);
-          return Response.json({ error: "Failed to fetch tunnels" }, { status: 500 });
+          return Response.json(
+            { error: "Failed to fetch tunnels" },
+            { status: 500 },
+          );
         }
       },
 
@@ -180,8 +184,8 @@ export const Route = createFileRoute("/api/admin/tunnels")({
         }
 
         try {
-          const body = await request.json() as { action?: string };
-          
+          const body = (await request.json()) as { action?: string };
+
           if (body.action !== "cleanup") {
             return Response.json({ error: "Invalid action" }, { status: 400 });
           }
@@ -189,54 +193,68 @@ export const Route = createFileRoute("/api/admin/tunnels")({
           console.log("[ADMIN] Starting stale tunnel cleanup...");
           let totalRemoved = 0;
           let totalChecked = 0;
-          const removedEntries: { setKey: string; tunnelId: string; reason: string }[] = [];
+          const removedEntries: {
+            setKey: string;
+            tunnelId: string;
+            reason: string;
+          }[] = [];
 
           // UUID regex pattern
-          const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+          const uuidPattern =
+            /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-          // Scan all org:*:online_tunnels sets
-          let cursor = "0";
-          do {
-            const [nextCursor, keys] = await redis.scan(
-              cursor,
-              "MATCH",
-              "org:*:online_tunnels",
-              "COUNT",
-              100
-            );
-            cursor = nextCursor;
+          // Get all org IDs with online tunnels from global index (O(1) lookup)
+          const orgIds = await redis.smembers(
+            "global:orgs_with_online_tunnels",
+          );
 
-            for (const setKey of keys) {
-              // Get all members of this set
-              const members = await redis.smembers(setKey);
-              
-              for (const tunnelId of members) {
-                totalChecked++;
-                
-                // Check if this is a valid UUID (dbTunnelId) or a hostname (legacy bug)
-                if (!uuidPattern.test(tunnelId)) {
-                  // This is a hostname, not a UUID - it's a stale entry from the old bug
-                  await redis.srem(setKey, tunnelId);
-                  removedEntries.push({ setKey, tunnelId, reason: "invalid_format_hostname" });
-                  totalRemoved++;
-                  continue;
-                }
+          for (const orgId of orgIds) {
+            const setKey = `org:${orgId}:online_tunnels`;
+            // Get all members of this set
+            const members = await redis.smembers(setKey);
 
-                // Check if the tunnel:last_seen key exists (valid UUID entries)
-                const lastSeenKey = `tunnel:last_seen:${tunnelId}`;
-                const lastSeenExists = await redis.exists(lastSeenKey);
-                
-                if (!lastSeenExists) {
-                  // No last_seen key means the tunnel is offline but wasn't cleaned up
-                  await redis.srem(setKey, tunnelId);
-                  removedEntries.push({ setKey, tunnelId, reason: "missing_last_seen" });
-                  totalRemoved++;
-                }
+            for (const tunnelId of members) {
+              totalChecked++;
+
+              // Check if this is a valid UUID (dbTunnelId) or a hostname (legacy bug)
+              if (!uuidPattern.test(tunnelId)) {
+                // This is a hostname, not a UUID - it's a stale entry from the old bug
+                await redis.srem(setKey, tunnelId);
+                removedEntries.push({
+                  setKey,
+                  tunnelId,
+                  reason: "invalid_format_hostname",
+                });
+                totalRemoved++;
+                continue;
+              }
+
+              // Check if the tunnel:last_seen key exists (valid UUID entries)
+              const lastSeenKey = `tunnel:last_seen:${tunnelId}`;
+              const lastSeenExists = await redis.exists(lastSeenKey);
+
+              if (!lastSeenExists) {
+                // No last_seen key means the tunnel is offline but wasn't cleaned up
+                await redis.srem(setKey, tunnelId);
+                removedEntries.push({
+                  setKey,
+                  tunnelId,
+                  reason: "missing_last_seen",
+                });
+                totalRemoved++;
               }
             }
-          } while (cursor !== "0");
 
-          console.log(`[ADMIN] Cleanup complete: checked ${totalChecked} entries, removed ${totalRemoved} stale entries`);
+            // Remove org from global index if set is now empty
+            const remaining = await redis.scard(setKey);
+            if (remaining === 0) {
+              await redis.srem("global:orgs_with_online_tunnels", orgId);
+            }
+          }
+
+          console.log(
+            `[ADMIN] Cleanup complete: checked ${totalChecked} entries, removed ${totalRemoved} stale entries`,
+          );
 
           return Response.json({
             success: true,
@@ -246,7 +264,10 @@ export const Route = createFileRoute("/api/admin/tunnels")({
           });
         } catch (error) {
           console.error("Admin tunnel cleanup error:", error);
-          return Response.json({ error: "Failed to cleanup tunnels" }, { status: 500 });
+          return Response.json(
+            { error: "Failed to cleanup tunnels" },
+            { status: 500 },
+          );
         }
       },
     },
