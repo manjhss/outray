@@ -1,9 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { eq, and } from "drizzle-orm";
 import { auth } from "../../../lib/auth";
 import { verifyTransaction } from "../../../lib/paystack";
 import { db } from "../../../db";
 import { subscriptions } from "../../../db/subscription-schema";
-import { eq } from "drizzle-orm";
+import { members } from "../../../db/schema";
 
 export const Route = createFileRoute("/api/checkout/paystack-verify")({
   server: {
@@ -71,16 +72,47 @@ export const Route = createFileRoute("/api/checkout/paystack-verify")({
           const metadata = verification.data.metadata as {
             organizationId?: string;
             plan?: string;
+            userId?: string;
           };
 
-          if (!metadata.organizationId || !metadata.plan) {
+          if (!metadata.organizationId || !metadata.plan || !metadata.userId) {
             return Response.json(
               { error: "Invalid transaction metadata." },
               { status: 400 },
             );
           }
 
-          const { organizationId, plan } = metadata;
+          const { organizationId, plan, userId } = metadata;
+
+          // Verify that the transaction was initiated by the current user
+          if (userId !== session.user.id) {
+            return Response.json(
+              { error: "Transaction does not belong to the current user." },
+              { status: 403 },
+            );
+          }
+
+          // Verify user has admin/owner permissions for the organization
+          const membership = await db.query.members.findFirst({
+            where: and(
+              eq(members.organizationId, organizationId),
+              eq(members.userId, session.user.id),
+            ),
+          });
+
+          if (!membership) {
+            return Response.json(
+              { error: "You are not a member of this organization." },
+              { status: 403 },
+            );
+          }
+
+          if (!["owner", "admin"].includes(membership.role)) {
+            return Response.json(
+              { error: "Only organization owners and admins can manage subscriptions." },
+              { status: 403 },
+            );
+          }
           const customerEmail = verification.data.customer.email;
           const customerCode = verification.data.customer.customer_code;
 
