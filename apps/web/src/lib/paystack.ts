@@ -16,9 +16,9 @@ export const PAYSTACK_PRICES_NGN = {
 
 // Kobo pricing (Paystack uses smallest currency unit)
 export const PAYSTACK_PRICES_KOBO = {
-  ray: 10000 * 100, // 1,000,000 kobo
-  beam: 21000 * 100, // 2,100,000 kobo
-  pulse: 170000 * 100, // 17,000,000 kobo
+  ray: PAYSTACK_PRICES_NGN.ray * 100, // 1,000,000 kobo
+  beam: PAYSTACK_PRICES_NGN.beam * 100, // 2,100,000 kobo
+  pulse: PAYSTACK_PRICES_NGN.pulse * 100, // 17,000,000 kobo
 } as const;
 
 export type PaystackPlan = keyof typeof PAYSTACK_PRICES_NGN;
