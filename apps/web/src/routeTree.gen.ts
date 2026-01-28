@@ -19,6 +19,7 @@ import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as PluginsRouteImport } from './routes/plugins'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as NextjsRouteImport } from './routes/nextjs'
+import { Route as NestjsRouteImport } from './routes/nestjs'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as ExpressRouteImport } from './routes/express'
 import { Route as EmailTemplatesRouteImport } from './routes/email-templates'
@@ -152,6 +153,11 @@ const OnboardingRoute = OnboardingRouteImport.update({
 const NextjsRoute = NextjsRouteImport.update({
   id: '/nextjs',
   path: '/nextjs',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NestjsRoute = NestjsRouteImport.update({
+  id: '/nestjs',
+  path: '/nestjs',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -600,6 +606,7 @@ export interface FileRoutesByFullPath {
   '/email-templates': typeof EmailTemplatesRoute
   '/express': typeof ExpressRoute
   '/login': typeof LoginRoute
+  '/nestjs': typeof NestjsRoute
   '/nextjs': typeof NextjsRoute
   '/onboarding': typeof OnboardingRoute
   '/plugins': typeof PluginsRoute
@@ -695,6 +702,7 @@ export interface FileRoutesByTo {
   '/email-templates': typeof EmailTemplatesRoute
   '/express': typeof ExpressRoute
   '/login': typeof LoginRoute
+  '/nestjs': typeof NestjsRoute
   '/nextjs': typeof NextjsRoute
   '/onboarding': typeof OnboardingRoute
   '/plugins': typeof PluginsRoute
@@ -791,6 +799,7 @@ export interface FileRoutesById {
   '/email-templates': typeof EmailTemplatesRoute
   '/express': typeof ExpressRoute
   '/login': typeof LoginRoute
+  '/nestjs': typeof NestjsRoute
   '/nextjs': typeof NextjsRoute
   '/onboarding': typeof OnboardingRoute
   '/plugins': typeof PluginsRoute
@@ -889,6 +898,7 @@ export interface FileRouteTypes {
     | '/email-templates'
     | '/express'
     | '/login'
+    | '/nestjs'
     | '/nextjs'
     | '/onboarding'
     | '/plugins'
@@ -984,6 +994,7 @@ export interface FileRouteTypes {
     | '/email-templates'
     | '/express'
     | '/login'
+    | '/nestjs'
     | '/nextjs'
     | '/onboarding'
     | '/plugins'
@@ -1079,6 +1090,7 @@ export interface FileRouteTypes {
     | '/email-templates'
     | '/express'
     | '/login'
+    | '/nestjs'
     | '/nextjs'
     | '/onboarding'
     | '/plugins'
@@ -1176,6 +1188,7 @@ export interface RootRouteChildren {
   EmailTemplatesRoute: typeof EmailTemplatesRoute
   ExpressRoute: typeof ExpressRoute
   LoginRoute: typeof LoginRoute
+  NestjsRoute: typeof NestjsRoute
   NextjsRoute: typeof NextjsRoute
   OnboardingRoute: typeof OnboardingRoute
   PluginsRoute: typeof PluginsRoute
@@ -1305,6 +1318,13 @@ declare module '@tanstack/react-router' {
       path: '/nextjs'
       fullPath: '/nextjs'
       preLoaderRoute: typeof NextjsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/nestjs': {
+      id: '/nestjs'
+      path: '/nestjs'
+      fullPath: '/nestjs'
+      preLoaderRoute: typeof NestjsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -2056,6 +2076,7 @@ const rootRouteChildren: RootRouteChildren = {
   EmailTemplatesRoute: EmailTemplatesRoute,
   ExpressRoute: ExpressRoute,
   LoginRoute: LoginRoute,
+  NestjsRoute: NestjsRoute,
   NextjsRoute: NextjsRoute,
   OnboardingRoute: OnboardingRoute,
   PluginsRoute: PluginsRoute,
