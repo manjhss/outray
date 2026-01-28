@@ -26,7 +26,7 @@ export async function outray(
     // Try to determine the port
     let port: number;
     if (options.port) {
-        port = typeof options.port === "string" ? parseInt(options.port, 3000) : options.port;
+        port = typeof options.port === "string" ? parseInt(options.port, 10) : options.port;
     } else {
         // Attempt to get the port from the underlying HTTP server
         const httpServer = app.getHttpServer();
