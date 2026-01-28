@@ -3,6 +3,8 @@ import { ArrowRight, Copy, Check } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { SiExpress } from "react-icons/si";
 import { motion, useMotionValue, useSpring, useTransform } from "motion/react";
+import { Canvas } from "@react-three/fiber";
+import { ExpressBeamGroup } from "./ExpressBeamGroup";
 
 export const ExpressHero = () => {
   const [copied, setCopied] = useState(false);
@@ -41,10 +43,12 @@ export const ExpressHero = () => {
 
   return (
     <div className="relative min-h-[80vh] flex flex-col justify-center items-center pt-32 pb-16 overflow-hidden">
-      {/* Animated background */}
+      {/* Beam background */}
       <div className="absolute inset-0 z-0">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-white/5 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-accent/10 rounded-full blur-3xl animate-pulse delay-700" />
+        <Canvas camera={{ position: [0, 0, 15], fov: 45 }}>
+          <color attach="background" args={["#000000"]} />
+          <ExpressBeamGroup />
+        </Canvas>
       </div>
       
       <motion.div 
