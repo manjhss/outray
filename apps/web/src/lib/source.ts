@@ -2,7 +2,7 @@ import { docs } from "fumadocs-mdx:collections/server";
 import { loader } from "fumadocs-core/source";
 import { icons } from "lucide-react";
 import { createElement } from "react";
-import { SiVite, SiNextdotjs } from "react-icons/si";
+import { SiVite, SiNextdotjs,SiNestjs, SiExpress } from "react-icons/si";
 import { TbBuildingTunnel } from "react-icons/tb";
 import { LuSquareTerminal } from "react-icons/lu";
 
@@ -12,6 +12,8 @@ const customIcons: Record<string, React.ComponentType<{ className?: string }>> =
   SiNextdotjs,
   TbBuildingTunnel,
   LuSquareTerminal,
+  SiNestjs,
+  SiExpress,
 };
 
 export const source = loader({
