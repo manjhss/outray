@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import { Menu, X, ChevronDown, Mail, Headphones, Activity, Bug, Copy, Download } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { authClient } from "@/lib/auth-client";
-import { SiGithub, SiVite, SiNextdotjs, SiExpress } from "react-icons/si";
+import { SiGithub, SiVite, SiNextdotjs, SiExpress, SiNestjs } from "react-icons/si";
 import { GitHubButton } from "./github-button";
 
 // SVG logo content for copying
@@ -229,27 +229,34 @@ export const Navbar = () => {
                     </div>
                     
                     <div className="border-l border-white/10 pl-8">
-                      <div className="grid grid-cols-3 gap-4">
+                      <div className="grid grid-cols-[repeat(auto-fill,minmax(56px,1fr))] gap-3 w-32">
                         <Link 
                           to="/vite" 
-                          className="flex items-center justify-center w-12 h-12 rounded-xl bg-white/5 hover:bg-white/10 transition-colors group"
+                          className="flex items-center justify-center w-14 h-14 rounded-xl bg-white/5 hover:bg-white/10 transition-colors group"
                           title="Vite"
                         >
-                          <SiVite className="w-6 h-6 text-white/50 group-hover:text-[#646CFF] transition-colors" />
+                          <SiVite className="w-7 h-7 text-white/50 group-hover:text-[#646CFF] transition-colors" />
                         </Link>
                         <Link 
                           to="/nextjs" 
-                          className="flex items-center justify-center w-12 h-12 rounded-xl bg-white/5 hover:bg-white/10 transition-colors group"
+                          className="flex items-center justify-center w-14 h-14 rounded-xl bg-white/5 hover:bg-white/10 transition-colors group"
                           title="Next.js"
                         >
-                          <SiNextdotjs className="w-6 h-6 text-white/50 group-hover:text-white transition-colors" />
+                          <SiNextdotjs className="w-7 h-7 text-white/50 group-hover:text-white transition-colors" />
                         </Link>
                         <Link 
                           to="/express" 
-                          className="flex items-center justify-center w-12 h-12 rounded-xl bg-white/5 hover:bg-white/10 transition-colors group"
+                          className="flex items-center justify-center w-14 h-14 rounded-xl bg-white/5 hover:bg-white/10 transition-colors group"
                           title="Express"
                         >
-                          <SiExpress className="w-6 h-6 text-white/50 group-hover:text-white transition-colors" />
+                          <SiExpress className="w-7 h-7 text-white/50 group-hover:text-white transition-colors" />
+                        </Link>
+                        <Link 
+                          to="/nestjs" 
+                          className="flex items-center justify-center w-14 h-14 rounded-xl bg-white/5 hover:bg-white/10 transition-colors group"
+                          title="NestJS"
+                        >
+                          <SiNestjs className="w-7 h-7 text-white/50 group-hover:text-[#E0234E] transition-colors" />
                         </Link>
                       </div>
                     </div>
