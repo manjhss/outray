@@ -65,7 +65,7 @@ export const NestJSCodeExample = () => {
                   <span className="text-green-400/80">'./app.module'</span>;{"\n"}
                   <span className="text-accent">import</span> {"{"} outray {"}"}{" "}
                   <span className="text-accent">from</span>{" "}
-                  <span className="text-green-400/80">'@outray/nestjs'</span>;{"\n"}
+                  <span className="text-green-400/80">'@outray/nest'</span>;{"\n"}
                   {"\n"}
                   <span className="text-accent">async function</span> bootstrap() {"{"}
                   {"\n"}
