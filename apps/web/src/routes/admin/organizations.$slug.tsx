@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion } from "motion/react";
-import { ArrowLeft, Building2, Users, Network, Globe, Crown, Save, Loader2, X, User } from "lucide-react";
+import { ArrowLeft, Building2, Users, Network, Globe, Crown, Save, Loader2, X, User, AlertTriangle } from "lucide-react";
 import { appClient } from "@/lib/app-client";
 import { useAdminStore } from "@/lib/admin-store";
 
@@ -40,6 +40,7 @@ function AdminOrganizationDetailPage() {
   const [status, setStatus] = useState("");
   const [initialized, setInitialized] = useState(false);
   const [activeModal, setActiveModal] = useState<ModalType>(null);
+  const [showResetModal, setShowResetModal] = useState(false);
 
   const { data, isLoading } = useQuery({
     queryKey: ["admin", "organization", slug],
@@ -74,6 +75,30 @@ function AdminOrganizationDetailPage() {
       }
     },
   });
+
+  const resetToFreeMutation = useMutation({
+    mutationFn: async () => {
+      const res = await appClient.admin.resetToFree(token!, slug);
+      if ("error" in res) throw new Error(res.error);
+      return res;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin", "organization", slug] });
+      queryClient.invalidateQueries({ queryKey: ["admin", "organizations"] });
+      queryClient.invalidateQueries({ queryKey: ["admin", "subscriptions"] });
+      setPlan("free");
+      setStatus("active");
+    },
+  });
+
+  const handleResetToFree = () => {
+    setShowResetModal(true);
+  };
+
+  const confirmResetToFree = () => {
+    resetToFreeMutation.mutate();
+    setShowResetModal(false);
+  };
 
   const handleSave = () => {
     const updates: Record<string, string> = {};
@@ -245,6 +270,39 @@ function AdminOrganizationDetailPage() {
             {data.subscription.currentPeriodEnd && (
               <p className="text-xs text-gray-500 mt-1">Current Period Ends: <span className="text-gray-400">{formatDate(data.subscription.currentPeriodEnd)}</span></p>
             )}
+          </div>
+        )}
+
+        {/* Reset to Free Button */}
+        {data.subscription.plan !== "free" && (
+          <div className="mt-6 pt-6 border-t border-white/5">
+            <button
+              onClick={handleResetToFree}
+              disabled={resetToFreeMutation.isPending}
+              className="flex items-center gap-2 px-4 py-2 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl text-sm font-medium hover:bg-red-500/20 transition-all disabled:opacity-50"
+            >
+              {resetToFreeMutation.isPending ? (
+                <Loader2 size={14} className="animate-spin" />
+              ) : (
+                <AlertTriangle size={14} />
+              )}
+              Reset to Free Plan
+            </button>
+            <p className="text-xs text-gray-600 mt-2">
+              Removes subscription, domains, extra subdomains, and tunnels.
+            </p>
+          </div>
+        )}
+
+        {resetToFreeMutation.isSuccess && (
+          <div className="mt-4 p-3 bg-green-500/10 border border-green-500/20 rounded-xl text-green-400 text-sm">
+            Organization reset to free plan successfully
+          </div>
+        )}
+
+        {resetToFreeMutation.isError && (
+          <div className="mt-4 p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm">
+            Failed to reset organization
           </div>
         )}
       </div>
@@ -442,6 +500,72 @@ function AdminOrganizationDetailPage() {
             </div>
           )}
         </StatsModal>
+      )}
+
+      {/* Reset to Free Confirmation Modal */}
+      {showResetModal && (
+        <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+            onClick={() => setShowResetModal(false)}
+            className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+          />
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.15 }}
+            className="relative bg-[#0a0a0a] border border-white/10 rounded-2xl w-full max-w-md overflow-hidden"
+          >
+            <div className="p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-xl bg-red-500/10 flex items-center justify-center">
+                  <AlertTriangle size={20} className="text-red-400" />
+                </div>
+                <h3 className="text-lg font-semibold text-white">Reset to Free Plan</h3>
+              </div>
+              
+              <p className="text-gray-400 text-sm mb-4">
+                Are you sure you want to reset this organization to the free plan?
+              </p>
+              
+              <div className="bg-red-500/5 border border-red-500/10 rounded-xl p-4 mb-6">
+                <p className="text-sm text-red-400 font-medium mb-2">This will:</p>
+                <ul className="text-sm text-gray-400 space-y-1">
+                  <li>• Delete all custom domains</li>
+                  <li>• Remove their subscription</li>
+                  <li>• Delete all subdomains except one</li>
+                  <li>• Close all tunnels except two</li>
+                </ul>
+                <p className="text-xs text-red-400 mt-3">This action cannot be undone.</p>
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowResetModal(false)}
+                  className="flex-1 px-4 py-2.5 bg-white/5 border border-white/10 text-white rounded-xl text-sm font-medium hover:bg-white/10 transition-all"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmResetToFree}
+                  disabled={resetToFreeMutation.isPending}
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-red-500 text-white rounded-xl text-sm font-medium hover:bg-red-600 transition-all disabled:opacity-50"
+                >
+                  {resetToFreeMutation.isPending ? (
+                    <Loader2 size={14} className="animate-spin" />
+                  ) : (
+                    <AlertTriangle size={14} />
+                  )}
+                  Reset to Free
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        </div>
       )}
     </div>
   );
