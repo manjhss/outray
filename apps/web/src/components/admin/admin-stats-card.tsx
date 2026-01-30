@@ -7,6 +7,7 @@ interface AdminStatsCardProps {
   change?: number;
   icon: ReactNode;
   subtitle?: string;
+  onClick?: () => void;
 }
 
 export function AdminStatsCard({
@@ -15,14 +16,19 @@ export function AdminStatsCard({
   change,
   icon,
   subtitle,
+  onClick,
 }: AdminStatsCardProps) {
   const isPositive = change !== undefined && change >= 0;
   const changeColor = isPositive
     ? "text-green-400 bg-green-500/10 border-green-500/20"
     : "text-red-400 bg-red-500/10 border-red-500/20";
 
+  const cardClasses = `group bg-white/2 border border-white/5 rounded-2xl p-6 hover:border-white/10 transition-all${
+    onClick ? " cursor-pointer" : ""
+  }`;
+
   return (
-    <div className="group bg-white/2 border border-white/5 rounded-2xl p-6 hover:border-white/10 transition-all">
+    <div className={cardClasses} onClick={onClick} role={onClick ? "button" : undefined}>
       <div className="flex items-start justify-between mb-4">
         <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-gray-300 border border-white/5 group-hover:border-accent/20 group-hover:text-accent transition-colors">
           {icon}
