@@ -32,6 +32,49 @@ export const Route = createRootRoute({
       {
         title: "OutRay - an open source alternative to ngrok",
       },
+      {
+        name: "description",
+        content:
+          "OutRay is an open-source tunneling solution that exposes localhost servers to the internet. Supports HTTP, TCP, and UDP protocols with custom domains and real-time analytics.",
+      },
+      {
+        property: "og:title",
+        content: "OutRay - an open source alternative to ngrok",
+      },
+      {
+        property: "og:description",
+        content:
+          "OutRay is an open-source tunneling solution that exposes localhost servers to the internet. Supports HTTP, TCP, and UDP protocols with custom domains and real-time analytics.",
+      },
+      {
+        property: "og:image",
+        content: "https://outray.dev/og.png",
+      },
+      {
+        property: "og:type",
+        content: "website",
+      },
+      {
+        property: "og:url",
+        content: "https://outray.dev",
+      },
+      {
+        name: "twitter:card",
+        content: "summary_large_image",
+      },
+      {
+        name: "twitter:title",
+        content: "OutRay - an open source alternative to ngrok",
+      },
+      {
+        name: "twitter:description",
+        content:
+          "OutRay is an open-source tunneling solution that exposes localhost servers to the internet. Supports HTTP, TCP, and UDP protocols with custom domains and real-time analytics.",
+      },
+      {
+        name: "twitter:image",
+        content: "https://outray.dev/og.png",
+      },
     ],
     links: [
       {
