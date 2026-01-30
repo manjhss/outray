@@ -121,6 +121,18 @@ export const appClient = {
         data: { phrase },
       }),
 
+    revenueHistory: async (token: string, period: string = "30d") =>
+      apiCall<{
+        data: Array<{ date: string; revenue: number }>;
+        currentMrr: number;
+        previousMrr: number;
+        periodStart: string;
+        periodEnd: string;
+      }>("get", `/api/admin/revenue-history`, {
+        params: { period },
+        headers: { Authorization: `Bearer ${token}` },
+      }),
+
     overview: async (token: string) =>
       apiCall<{
         users: { total: number; growth: number; newToday: number };
