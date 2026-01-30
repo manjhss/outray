@@ -116,6 +116,7 @@ import {
 import { Users, Building2, Network, CreditCard, Activity } from "lucide-react";
 import { AdminStatsCard } from "@/components/admin/admin-stats-card";
 import { OverviewSkeleton } from "@/components/admin/admin-skeleton";
+import { ShareRevenueModal, preloadRevenueBackgrounds } from "@/components/admin/share-revenue-modal";
 
 function AdminOverview({ token }: { token: string }) {
   const clearToken = useAdminStore((s) => s.clearToken);
@@ -123,6 +124,13 @@ function AdminOverview({ token }: { token: string }) {
   const [overview, setOverview] = useState<any>(null);
   const [tunnelData, setTunnelData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showRevenueModal, setShowRevenueModal] = useState(false);
+  const [bgDataUrls, setBgDataUrls] = useState<Record<number, string>>({});
+
+  // Preload background images on mount
+  useEffect(() => {
+    preloadRevenueBackgrounds().then(setBgDataUrls);
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -241,8 +249,18 @@ function AdminOverview({ token }: { token: string }) {
           title="Monthly Revenue"
           value={`$${overview?.subscriptions?.mrr?.toLocaleString() || "0"}`}
           icon={<CreditCard size={20} />}
+          onClick={() => setShowRevenueModal(true)}
         />
       </div>
+
+      {/* Share Revenue Modal */}
+      <ShareRevenueModal
+        isOpen={showRevenueModal}
+        onClose={() => setShowRevenueModal(false)}
+        token={token}
+        currentMrr={overview?.subscriptions?.mrr || 0}
+        bgDataUrls={bgDataUrls}
+      />
 
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
