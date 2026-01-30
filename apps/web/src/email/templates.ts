@@ -24,12 +24,20 @@ type PaymentFailedParams = {
   attemptsRemaining: number;
 };
 
+type SubscriptionResetParams = {
+  name: string;
+  organizationName: string;
+  previousPlan: string;
+  dashboardUrl: string;
+};
+
 // Map template keys to their parameter types
 type TemplateParamsMap = {
   welcome: WelcomeParams;
   "password-reset": PasswordResetParams;
   "organization-invite": OrganizationInviteParams;
   "payment-failed": PaymentFailedParams;
+  "subscription-reset": SubscriptionResetParams;
 };
 
 export type EmailTemplateKey = keyof TemplateParamsMap;
@@ -336,6 +344,81 @@ export const emailTemplates: EmailTemplates = {
             <td style="padding: 0 0 30px 0;">
               <p style="margin: 0; font-size: 14px; line-height: 20px; color: #71717a;">
                 If you have any questions, just reply to this email.
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 20px 0 0 0; border-top: 1px solid #e4e4e7;">
+              <p style="margin: 0; font-size: 14px; color: #71717a;">
+                © 2026 Outray. All rights reserved.
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+`,
+  },
+
+  "subscription-reset": {
+    name: "Subscription Reset",
+    subject: ({ organizationName }) => `Your ${organizationName} subscription has been reset`,
+    params: ["name", "organizationName", "previousPlan", "dashboardUrl"],
+    previewParams: {
+      name: "John Doe",
+      organizationName: "Acme Inc",
+      previousPlan: "Ray",
+      dashboardUrl: "https://outray.dev/acme/settings",
+    },
+    html: ({ name, organizationName, previousPlan, dashboardUrl }) => `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Subscription Reset</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #ffffff;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #ffffff; padding: 40px 20px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width: 600px;">
+          <tr>
+            <td style="padding: 0 0 20px 0;">
+              <p style="margin: 0 0 16px 0; font-size: 16px; line-height: 24px; color: #3f3f46;">
+                Hi ${name},
+              </p>
+              <p style="margin: 0 0 16px 0; font-size: 16px; line-height: 24px; color: #3f3f46;">
+                Your organization <strong>${organizationName}</strong> has been reset from the <strong>${previousPlan}</strong> plan to the <strong>Free</strong> plan.
+              </p>
+              <p style="margin: 0 0 16px 0; font-size: 16px; line-height: 24px; color: #3f3f46;">
+                As part of this change, the following adjustments were made to fit within the Free plan limits:
+              </p>
+              <ul style="margin: 0 0 24px 0; padding-left: 20px; font-size: 16px; line-height: 24px; color: #3f3f46;">
+                <li>Custom domains have been removed</li>
+                <li>Reserved subdomains reduced to 1</li>
+                <li>Tunnels reduced to 2</li>
+              </ul>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 0 0 30px 0;">
+              <a href="${dashboardUrl}" style="display: inline-block; padding: 14px 32px; background-color: #18181b; color: #ffffff; text-decoration: none; font-size: 16px; font-weight: 600; border-radius: 8px;">
+                View Dashboard
+              </a>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 0 0 30px 0;">
+              <p style="margin: 0 0 16px 0; font-size: 16px; line-height: 24px; color: #3f3f46;">
+                If you believe this was done in error or have any questions, please reply to this email.
+              </p>
+              <p style="margin: 0; font-size: 16px; line-height: 24px; color: #3f3f46;">
+                Thanks,<br>
+                The OutRay Team
               </p>
             </td>
           </tr>
