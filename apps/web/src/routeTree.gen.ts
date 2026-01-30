@@ -72,6 +72,8 @@ import { Route as ApiAdminUsersRouteImport } from './routes/api/admin/users'
 import { Route as ApiAdminTunnelsRouteImport } from './routes/api/admin/tunnels'
 import { Route as ApiAdminSubscriptionsRouteImport } from './routes/api/admin/subscriptions'
 import { Route as ApiAdminStatsRouteImport } from './routes/api/admin/stats'
+import { Route as ApiAdminRevenueHistoryRouteImport } from './routes/api/admin/revenue-history'
+import { Route as ApiAdminProxyImageRouteImport } from './routes/api/admin/proxy-image'
 import { Route as ApiAdminOverviewRouteImport } from './routes/api/admin/overview'
 import { Route as ApiAdminOrganizationsRouteImport } from './routes/api/admin/organizations'
 import { Route as ApiAdminLoginRouteImport } from './routes/api/admin/login'
@@ -424,6 +426,16 @@ const ApiAdminStatsRoute = ApiAdminStatsRouteImport.update({
   path: '/api/admin/stats',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAdminRevenueHistoryRoute = ApiAdminRevenueHistoryRouteImport.update({
+  id: '/api/admin/revenue-history',
+  path: '/api/admin/revenue-history',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminProxyImageRoute = ApiAdminProxyImageRouteImport.update({
+  id: '/api/admin/proxy-image',
+  path: '/api/admin/proxy-image',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAdminOverviewRoute = ApiAdminOverviewRouteImport.update({
   id: '/api/admin/overview',
   path: '/api/admin/overview',
@@ -649,6 +661,8 @@ export interface FileRoutesByFullPath {
   '/api/admin/login': typeof ApiAdminLoginRoute
   '/api/admin/organizations': typeof ApiAdminOrganizationsRouteWithChildren
   '/api/admin/overview': typeof ApiAdminOverviewRoute
+  '/api/admin/proxy-image': typeof ApiAdminProxyImageRoute
+  '/api/admin/revenue-history': typeof ApiAdminRevenueHistoryRoute
   '/api/admin/stats': typeof ApiAdminStatsRoute
   '/api/admin/subscriptions': typeof ApiAdminSubscriptionsRoute
   '/api/admin/tunnels': typeof ApiAdminTunnelsRoute
@@ -744,6 +758,8 @@ export interface FileRoutesByTo {
   '/api/admin/login': typeof ApiAdminLoginRoute
   '/api/admin/organizations': typeof ApiAdminOrganizationsRouteWithChildren
   '/api/admin/overview': typeof ApiAdminOverviewRoute
+  '/api/admin/proxy-image': typeof ApiAdminProxyImageRoute
+  '/api/admin/revenue-history': typeof ApiAdminRevenueHistoryRoute
   '/api/admin/stats': typeof ApiAdminStatsRoute
   '/api/admin/subscriptions': typeof ApiAdminSubscriptionsRoute
   '/api/admin/tunnels': typeof ApiAdminTunnelsRoute
@@ -842,6 +858,8 @@ export interface FileRoutesById {
   '/api/admin/login': typeof ApiAdminLoginRoute
   '/api/admin/organizations': typeof ApiAdminOrganizationsRouteWithChildren
   '/api/admin/overview': typeof ApiAdminOverviewRoute
+  '/api/admin/proxy-image': typeof ApiAdminProxyImageRoute
+  '/api/admin/revenue-history': typeof ApiAdminRevenueHistoryRoute
   '/api/admin/stats': typeof ApiAdminStatsRoute
   '/api/admin/subscriptions': typeof ApiAdminSubscriptionsRoute
   '/api/admin/tunnels': typeof ApiAdminTunnelsRoute
@@ -941,6 +959,8 @@ export interface FileRouteTypes {
     | '/api/admin/login'
     | '/api/admin/organizations'
     | '/api/admin/overview'
+    | '/api/admin/proxy-image'
+    | '/api/admin/revenue-history'
     | '/api/admin/stats'
     | '/api/admin/subscriptions'
     | '/api/admin/tunnels'
@@ -1036,6 +1056,8 @@ export interface FileRouteTypes {
     | '/api/admin/login'
     | '/api/admin/organizations'
     | '/api/admin/overview'
+    | '/api/admin/proxy-image'
+    | '/api/admin/revenue-history'
     | '/api/admin/stats'
     | '/api/admin/subscriptions'
     | '/api/admin/tunnels'
@@ -1133,6 +1155,8 @@ export interface FileRouteTypes {
     | '/api/admin/login'
     | '/api/admin/organizations'
     | '/api/admin/overview'
+    | '/api/admin/proxy-image'
+    | '/api/admin/revenue-history'
     | '/api/admin/stats'
     | '/api/admin/subscriptions'
     | '/api/admin/tunnels'
@@ -1213,6 +1237,8 @@ export interface RootRouteChildren {
   ApiAdminLoginRoute: typeof ApiAdminLoginRoute
   ApiAdminOrganizationsRoute: typeof ApiAdminOrganizationsRouteWithChildren
   ApiAdminOverviewRoute: typeof ApiAdminOverviewRoute
+  ApiAdminProxyImageRoute: typeof ApiAdminProxyImageRoute
+  ApiAdminRevenueHistoryRoute: typeof ApiAdminRevenueHistoryRoute
   ApiAdminStatsRoute: typeof ApiAdminStatsRoute
   ApiAdminSubscriptionsRoute: typeof ApiAdminSubscriptionsRoute
   ApiAdminTunnelsRoute: typeof ApiAdminTunnelsRoute
@@ -1691,6 +1717,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAdminStatsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/admin/revenue-history': {
+      id: '/api/admin/revenue-history'
+      path: '/api/admin/revenue-history'
+      fullPath: '/api/admin/revenue-history'
+      preLoaderRoute: typeof ApiAdminRevenueHistoryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/proxy-image': {
+      id: '/api/admin/proxy-image'
+      path: '/api/admin/proxy-image'
+      fullPath: '/api/admin/proxy-image'
+      preLoaderRoute: typeof ApiAdminProxyImageRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/admin/overview': {
       id: '/api/admin/overview'
       path: '/api/admin/overview'
@@ -2101,6 +2141,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAdminLoginRoute: ApiAdminLoginRoute,
   ApiAdminOrganizationsRoute: ApiAdminOrganizationsRouteWithChildren,
   ApiAdminOverviewRoute: ApiAdminOverviewRoute,
+  ApiAdminProxyImageRoute: ApiAdminProxyImageRoute,
+  ApiAdminRevenueHistoryRoute: ApiAdminRevenueHistoryRoute,
   ApiAdminStatsRoute: ApiAdminStatsRoute,
   ApiAdminSubscriptionsRoute: ApiAdminSubscriptionsRoute,
   ApiAdminTunnelsRoute: ApiAdminTunnelsRoute,
