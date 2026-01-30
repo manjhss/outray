@@ -4,6 +4,8 @@ import { organizations, members, subscriptions, tunnels, subdomains, domains, us
 import { redis } from "../../../lib/redis";
 import { hashToken } from "../../../lib/hash";
 import { eq, count, gte, and, desc } from "drizzle-orm";
+import { generateEmail } from "../../../email/templates";
+import { sendViaZepto } from "../../../lib/send-email";
 
 export const Route = createFileRoute("/api/admin/organizations/$slug")({
   server: {
@@ -173,6 +175,134 @@ export const Route = createFileRoute("/api/admin/organizations/$slug")({
         } catch (error) {
           console.error("Admin org update error:", error);
           return Response.json({ error: "Failed to update organization" }, { status: 500 });
+        }
+      },
+
+      POST: async ({ request, params }) => {
+        const authHeader = request.headers.get("authorization") || "";
+        const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : "";
+        if (!token) return Response.json({ error: "Unauthorized" }, { status: 401 });
+
+        const tokenKey = `admin:token:${hashToken(token)}`;
+        const exists = await redis.get(tokenKey);
+        if (!exists) return Response.json({ error: "Forbidden" }, { status: 403 });
+
+        try {
+          const { slug } = params;
+          const body = await request.json();
+          
+          if (body.action === "reset_to_free") {
+            const [org] = await db.select().from(organizations).where(eq(organizations.slug, slug)).limit(1);
+            if (!org) return Response.json({ error: "Organization not found" }, { status: 404 });
+
+            // Get the current subscription to know the previous plan
+            const [currentSub] = await db.select().from(subscriptions).where(eq(subscriptions.organizationId, org.id)).limit(1);
+            const previousPlan = currentSub?.plan || "free";
+
+            // Find the owner of the organization
+            const [owner] = await db.select({
+              userId: members.userId,
+              userName: users.name,
+              userEmail: users.email,
+            })
+              .from(members)
+              .innerJoin(users, eq(members.userId, users.id))
+              .where(and(eq(members.organizationId, org.id), eq(members.role, "owner")))
+              .limit(1);
+
+            // 1. Delete subscription
+            await db.delete(subscriptions).where(eq(subscriptions.organizationId, org.id));
+
+            // 2. Delete all custom domains
+            await db.delete(domains).where(eq(domains.organizationId, org.id));
+
+            // 3. Get all subdomains and keep only the oldest one
+            const orgSubdomains = await db.select()
+              .from(subdomains)
+              .where(eq(subdomains.organizationId, org.id))
+              .orderBy(subdomains.createdAt);
+
+            if (orgSubdomains.length > 1) {
+              // Keep the first (oldest) subdomain, delete the rest
+              const subdomainsToDelete = orgSubdomains.slice(1).map(s => s.id);
+              for (const subId of subdomainsToDelete) {
+                await db.delete(subdomains).where(eq(subdomains.id, subId));
+              }
+            }
+
+            // 4. Get all tunnels and keep only the two oldest (free plan allows 2)
+            const orgTunnels = await db.select()
+              .from(tunnels)
+              .where(eq(tunnels.organizationId, org.id))
+              .orderBy(tunnels.createdAt);
+
+            let tunnelsDeleted = 0;
+            if (orgTunnels.length > 2) {
+              // Keep the first 2 (oldest) tunnels, delete the rest
+              const tunnelsToDelete = orgTunnels.slice(2);
+              for (const tunnel of tunnelsToDelete) {
+                await db.delete(tunnels).where(eq(tunnels.id, tunnel.id));
+                
+                // Extract tunnel identifier for kill command (matching dashboard logic)
+                let tunnelIdentifier = tunnel.url;
+                try {
+                  const protocol = tunnel.protocol || "http";
+                  if (protocol === "tcp" || protocol === "udp") {
+                    const urlObj = new URL(tunnel.url.replace(/^(tcp|udp):/, "https:"));
+                    tunnelIdentifier = urlObj.hostname.split(".")[0];
+                  } else {
+                    const urlObj = new URL(
+                      tunnel.url.startsWith("http") ? tunnel.url : `https://${tunnel.url}`
+                    );
+                    tunnelIdentifier = urlObj.hostname;
+                  }
+                } catch (e) {
+                  // ignore parse errors
+                }
+                
+                await redis.publish("tunnel:control", `kill:${tunnelIdentifier}`);
+              }
+              tunnelsDeleted = tunnelsToDelete.length;
+            }
+
+            // 5. Send email to the owner
+            if (owner?.userEmail && previousPlan !== "free") {
+              try {
+                const { html, subject } = generateEmail("subscription-reset", {
+                  name: owner.userName || "there",
+                  organizationName: org.name,
+                  previousPlan: previousPlan.charAt(0).toUpperCase() + previousPlan.slice(1),
+                  dashboardUrl: `${process.env.APP_URL}/${org.slug}/settings`,
+                });
+
+                await sendViaZepto({
+                  recipientEmail: owner.userEmail,
+                  subject,
+                  htmlString: html,
+                  senderEmail: "akinkunmi@outray.dev",
+                  senderName: "Akinkunmi from OutRay",
+                });
+                console.log(`[Subscription Reset Email] Sent to: ${owner.userEmail}`);
+              } catch (emailError) {
+                console.error("[Subscription Reset Email] Failed to send:", emailError);
+              }
+            }
+
+            return Response.json({ 
+              success: true, 
+              message: "Organization reset to free plan",
+              deleted: {
+                domains: "all",
+                subdomains: orgSubdomains.length > 1 ? orgSubdomains.length - 1 : 0,
+                tunnels: tunnelsDeleted,
+              }
+            });
+          }
+
+          return Response.json({ error: "Unknown action" }, { status: 400 });
+        } catch (error) {
+          console.error("Admin org action error:", error);
+          return Response.json({ error: "Failed to perform action" }, { status: 500 });
         }
       },
     },
