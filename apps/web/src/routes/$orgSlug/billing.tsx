@@ -419,7 +419,12 @@ function BillingView() {
                 {/* Billing Interval Toggle */}
                 <SlidingToggle
                   options={[
-                    { value: "month" as const, label: "Monthly", activeColor: "bg-white", activeTextColor: "text-black" },
+                    {
+                      value: "month" as const,
+                      label: "Monthly",
+                      activeColor: "bg-white",
+                      activeTextColor: "text-black",
+                    },
                     {
                       value: "year" as const,
                       label: (
@@ -442,8 +447,18 @@ function BillingView() {
                 {showPaystack && (
                   <SlidingToggle
                     options={[
-                      { value: "USD" as const, label: "USD", activeColor: "bg-white", activeTextColor: "text-black" },
-                      { value: "NGN" as const, label: "NGN", activeColor: "bg-green-600", activeTextColor: "text-white" },
+                      {
+                        value: "USD" as const,
+                        label: "USD",
+                        activeColor: "bg-white",
+                        activeTextColor: "text-black",
+                      },
+                      {
+                        value: "NGN" as const,
+                        label: "NGN",
+                        activeColor: "bg-green-600",
+                        activeTextColor: "text-white",
+                      },
                     ]}
                     value={currency}
                     onChange={setCurrency}
