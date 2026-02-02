@@ -38,7 +38,7 @@ export const Route = createFileRoute("/$orgSlug/billing")({
 function BillingView() {
   const { orgSlug } = Route.useParams();
   const { data: orgs } = authClient.useListOrganizations();
-  const selectedOrganizationId = orgs?.find((org) => org.slug == orgSlug)?.id;
+  const selectedOrganizationId = orgs?.find((org) => org.slug === orgSlug)?.id;
   const { success } = Route.useSearch();
   const [showPaystack, setShowPaystack] = useState(false);
   const [currency, setCurrency] = useState<Currency>("USD");
