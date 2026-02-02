@@ -61,7 +61,12 @@ function PricingPage() {
             <div className="flex items-center justify-center gap-2">
               <SlidingToggle
                 options={[
-                  { value: "month" as const, label: "Monthly", activeColor: "bg-white", activeTextColor: "text-black" },
+                  {
+                    value: "month" as const,
+                    label: "Monthly",
+                    activeColor: "bg-white",
+                    activeTextColor: "text-black",
+                  },
                   {
                     value: "year" as const,
                     label: (
